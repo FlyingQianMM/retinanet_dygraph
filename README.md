@@ -37,6 +37,8 @@ python setup.py build_ext --inplace
 ```
 tar -xvf imagenet_resnet50_fusebn.tar
 ```
+
+**启动训练**
 - 单卡训练：
     ```
     export CUDA_VISIBLE_DEVICES=0
