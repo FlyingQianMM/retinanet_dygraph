@@ -44,7 +44,7 @@ tar -xvf imagenet_resnet50_fusebn.tar
     export CUDA_VISIBLE_DEVICES=0
     python train.py \
        --model_save_dir=output/ \
-       --pretrained_model=imagenet_resnet50_fusebn\
+       --pretrained_model=imagenet_resnet50_fusebn \
        --data_dir=${path_to_data} \
        --use_data_parallel=0
     ```
@@ -55,7 +55,7 @@ tar -xvf imagenet_resnet50_fusebn.tar
     export CUDA_VISIBLE_DEVICES=0,1,2,3
     python -m paddle.distributed.launch --selected_gpus=0,1,2,3 --log_dir ./mylog train.py \
        --model_save_dir=output/ \
-       --pretrained_model=imagenet_resnet50_fusebn\
+       --pretrained_model=imagenet_resnet50_fusebn \
        --data_dir=${path_to_data} \
        --use_data_parallel=1
     ```
