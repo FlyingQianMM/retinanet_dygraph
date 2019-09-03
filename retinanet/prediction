@@ -1,2 +1,0 @@
-W0816 12:19:35.083214 50378 device_context.cc:261] Please NOTE: device: 0, CUDA Capability: 61, Driver API Version: 10.1, Runtime API Version: 9.0
-W0816 12:19:35.088526 50378 device_context.cc:269] device: 0, cuDNN Version: 7.2.
