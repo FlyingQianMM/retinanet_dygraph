@@ -67,5 +67,5 @@ python convert_dygraph.py --model_dir=${path_to_model}
 
 启动评估：
 ```
-python eval_coco_map.py --pretrained_model model_final/ --use_data_parallel 0 --data_dir=../retinanet_model/dataset/coco/
+python eval_coco_map.py --pretrained_model=${path_to_model} --use_data_parallel 0 --data_dir=${path_to_data} 
 ```
