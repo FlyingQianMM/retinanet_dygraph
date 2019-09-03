@@ -165,7 +165,6 @@ def coco(mode,
                             sub_batch_out = []
                         batch_out = []
                 iter_id = count // device_num
-                print("max_iter: {}".format(cfg.max_iter * 8 / device_num))
                 if iter_id >= cfg.max_iter * 8 / device_num:
                     return
         elif mode == "val":
