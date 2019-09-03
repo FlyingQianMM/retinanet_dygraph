@@ -1,0 +1,1062 @@
+Script started on Mon May 13 05:57:26 2019
+# vim models/model_builder.py
+[?1049h[?1h=[2;1H½[6n[2;1H  [1;1H]11;?[1;52r[?12;25h[?12l[?25h[27m[23m[m[H[2J[?25l[52;1H"models/model_builder.py" 388L, 15778C[>c[1;1H[33m  1 [m[34m#  Copyright (c) 2018 PaddlePaddle Authors. All Rights Reserve.[m
+[33m  2 [m[34m#[m
+[33m  3 [m[34m#Licensed under the Apache License, Version 2.0 (the "License");[m
+[33m  4 [m[34m#you may not use this file except in compliance with the License.[m
+[33m  5 [m[34m#You may obtain a copy of the License at[m
+[33m  6 [m[34m#[m
+[33m  7 [m[34m#    http://www.apache.org/licenses/LICENSE-2.0[m
+[33m  8 [m[34m#[m
+[33m  9 [m[34m#Unless required by applicable law or agreed to in writing, software[m
+[33m 10 [m[34m#distributed under the License is distributed on an "AS IS" BASIS,[m
+[33m 11 [m[34m#WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.[m
+[33m 12 [m[34m#See the License for the specific language governing permissions and[m
+[33m 13 [m[34m#limitations under the License.[m
+[33m 14 [m[35mimport[m numpy [33mas[m np
+[33m 15 [m[35mimport[m paddle.fluid [33mas[m fluid
+[33m 16 [m[35mfrom[m paddle.fluid.param_attr [35mimport[m ParamAttr
+[33m 17 [m[35mfrom[m paddle.fluid.initializer [35mimport[m Constant
+[33m 18 [m[35mfrom[m paddle.fluid.initializer [35mimport[m Normal
+[33m 19 [m[35mfrom[m paddle.fluid.initializer [35mimport[m MSRA
+[33m 20 [m[35mfrom[m paddle.fluid.regularizer [35mimport[m L2Decay
+[33m 21 [m[35mfrom[m config [35mimport[m cfg
+[33m 22 
+ 23 
+ 24 class[m [36mRetinaNet[m([36mobject[m):
+[33m 25 [m    [33mdef[m [36m__init__[m(self,
+[33m 26 [m[17Cadd_conv_body_func=[36mNone[m,
+[33m 27 [m[17Cadd_fpn_neck_func=[36mNone[m,
+[33m 28 [m[17Canchor_strides=[[31m8[m, [31m16[m, [31m32[m, [31m64[m, [31m128[m],
+[33m 29 [m[17Cmode=[31m'train'[m,
+[33m 30 [m[17Cuse_pyreader=[36mTrue[m,
+[33m 31 [m[17Cuse_random=[36mTrue[m):
+[33m 32 [m[8Cself.add_conv_body_func = add_conv_body_func
+[33m 33 [m[8Cself.add_fpn_neck_func = add_fpn_neck_func
+[33m 34 [m[8Cself.mode = mode
+[33m 35 [m[8Cself.use_pyreader = use_pyreader
+[33m 36 [m[8Cself.use_random = use_random
+[33m 37 [m[8Cself.anchor_strides = anchor_strides
+[33m 38 
+ 39 [m    [33mdef[m [36mbuild_model[m(self, image_shape):
+[33m 40 [m[8Cself.build_input(image_shape)
+[33m 41 [m[8C[34m# backbone[m
+[33m 42 [m[8Cfeat_layers = self.extract_feat(self.image)
+[33m 43 [m[8C[34m# bbox head[m
+[33m 44 [m[8Cself.retina_heads(feat_layers)
+[33m 45 
+ 46 [8Cif[m self.mode != [31m'train'[m:
+[33m 47 [m[12Cself.eval_bbox()
+[33m 48 
+ 49 
+ 50 [m    [33mdef[m [36meval_bbox_out[m(self):
+[33m 51 [8Creturn[m self.pred_result[52;156H1,1[11CTop[1;5H[?12l[?25h[?25l[52;1H[K[52;1H:[?12l[?25hq[?25l[52;1H[K[52;1H[?1l>[?12l[?25h[?1049l# python eval_coco_map.py --pretrained_model=output/model_final/ --data_dir=dataset/coco/COCO17
+
+-----------  Configuration Arguments -----------
+batch_size_per_im: 512
+class_num: 81
+data_dir: dataset/coco/COCO17
+dataset: coco2017
+draw_threshold: 0.8
+enable_ce: False
+im_per_batch: 1
+image_path: dataset/coco/val2017
+learning_rate: 0.01
+log_window: 20
+max_iter: 180000
+max_size: 1333
+model_save_dir: output
+nms_thresh: 0.5
+num_gpus: 1
+padding_minibatch: False
+parallel: True
+pixel_means: [102.9801, 115.9465, 122.7717]
+pretrained_model: output/model_final/
+scales: [800]
+score_thresh: 0.05
+snapshot_stride: 10000
+use_gpu: True
+use_profile: False
+use_pyreader: True
+------------------------------------------------
+loading annotations into memory...
+Done (t=0.91s)
+creating index...
+index created!
+end_level: 3
+used_body_levels: 3
+name: "tmp_0"
+type {
+  type: LOD_TENSOR
+  lod_tensor {
+    tensor {
+      data_type: FP32
+      dims: -1
+      dims: -1
+      dims: 4
+    }
+    lod_level: 0
+  }
+}
+
+name: "tmp_1"
+type {
+  type: LOD_TENSOR
+  lod_tensor {
+    tensor {
+      data_type: FP32
+      dims: -1
+      dims: -1
+      dims: 4
+    }
+    lod_level: 0
+  }
+}
+
+name: "tmp_2"
+type {
+  type: LOD_TENSOR
+  lod_tensor {
+    tensor {
+      data_type: FP32
+      dims: -1
+      dims: -1
+      dims: 4
+    }
+    lod_level: 0
+  }
+}
+
+name: "tmp_3"
+type {
+  type: LOD_TENSOR
+  lod_tensor {
+    tensor {
+      data_type: FP32
+      dims: -1
+      dims: -1
+      dims: 4
+    }
+    lod_level: 0
+  }
+}
+
+name: "tmp_4"
+type {
+  type: LOD_TENSOR
+  lod_tensor {
+    tensor {
+      data_type: FP32
+      dims: -1
+      dims: -1
+      dims: 4
+    }
+    lod_level: 0
+  }
+}
+
+W0513 05:57:41.479151 98870 device_context.cc:261] Please NOTE: device: 0, CUDA Capability: 70, Driver API Version: 10.1, Runtime API Version: 9.0
+W0513 05:57:41.484347 98870 device_context.cc:269] device: 0, cuDNN Version: 7.0.
+Creating: coco2017
+file_list: dataset/coco/COCO17/annotations/instances_val2017.json
+loading annotations into memory...
+Done (t=0.97s)
+creating index...
+index created!
+^[[A^[[A^[[A^[[A^[[A^[[A^[[A^[[A^[[A^[[A^[[A^[[A^[[A^[[ALoaded dataset: coco2017
+5000 roidb entries
+val on coco2017 with 5000 roidbs
+begin run
+1557727065	The content of decoded_box: 	Tensor[tmp_0]
+	shape: [1,135900,4,]
+	dtype: f
+	data: -10.8628,-4.95698,12.9546,7.55361,-14.0339,-7.49451,15.1843,8.90162,-16.3459,-10.1038,
+1557727065	The content of im_info: 	Tensor[im_info]
+	shape: [1,3,]
+	dtype: f
+	data: 800,1202,1.87793,
+*** Aborted at 1557727065 (unix time) try "date -d @1557727065" if you are using GNU date ***
+PC: @                0x0 (unknown)
+*** SIGSEGV (@0xfffffffffffffff0) received by PID 98870 (TID 0x7fb6d88dd700) from PID 18446744073709551600; stack trace: ***
+    @     0x7fb6d84c2390 (unknown)
+    @     0x7fb60474d5a5 paddle::operators::GPUBoxClipKernel<>::Compute()
+    @     0x7fb60474e3df _ZNSt17_Function_handlerIFvRKN6paddle9framework16ExecutionContextEEZNKS1_24OpKernelRegistrarFunctorINS0_8platform9CUDAPlaceELb0ELm0EJNS0_9operators16GPUBoxClipKernelINS7_17CUDADeviceContextEfEENSA_ISB_dEEEEclEPKcSG_iEUlS4_E_E9_M_invokeERKSt9_Any_dataS4_
+    @     0x7fb604c6a651 paddle::framework::OperatorWithKernel::RunImpl()
+    @     0x7fb604c6b6a3 paddle::framework::OperatorWithKernel::RunImpl()
+    @     0x7fb604c64dde paddle::framework::OperatorBase::Run()
+    @     0x7fb6030b325e paddle::framework::Executor::RunPreparedContext()
+    @     0x7fb6030b631d paddle::framework::Executor::Run()
+    @     0x7fb602ed4226 _ZZN8pybind1112cpp_function10initializeIZN6paddle6pybindL18pybind11_init_coreERNS_6moduleEEUlRNS2_9framework8ExecutorERKNS6_11ProgramDescEPNS6_5ScopeEibbRKSt6vectorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaISK_EEE97_vJS8_SB_SD_ibbSO_EJNS_4nameENS_9is_methodENS_7siblingEEEEvOT_PFT0_DpT1_EDpRKT2_ENUlRNS_6detail13function_callEE1_4_FUNES16_
+    @     0x7fb602f222d4 pybind11::cpp_function::dispatcher()
+    @           0x4c5326 PyEval_EvalFrameEx
+    @           0x4b9b66 PyEval_EvalCodeEx
+    @           0x4c1f56 PyEval_EvalFrameEx
+    @           0x4b9b66 PyEval_EvalCodeEx
+    @           0x4c17c6 PyEval_EvalFrameEx
+    @           0x4b9b66 PyEval_EvalCodeEx
+    @           0x4c1f56 PyEval_EvalFrameEx
+    @           0x4b9b66 PyEval_EvalCodeEx
+    @           0x4eb69f (unknown)
+    @           0x4e58f2 PyRun_FileExFlags
+    @           0x4e41a6 PyRun_SimpleFileExFlags
+    @           0x4938ce Py_Main
+    @     0x7fb6d8107830 __libc_start_main
+    @           0x493299 _start
+    @                0x0 (unknown)
+Segmentation fault
+# # vim typescript
+sh: 4: [A[A[A[A[A[A[A[A[A[A[A[A[A[Avim: not found
+# ^[^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B
+sh: 5: [B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B: File name too long
+# vim typescript
+[?1049h[?1h=[2;1H½[6n[2;1H  [1;1H]11;?[1;52r[?12;25h[?12l[?25h[27m[23m[m[H[2J[?25l[52;1H"typescript" [noeol] 209L, 8192C[>c[1;1H[33m  1 [mScript started on Mon May 13 05:57:26 2019
+[33m  2 [m[34m# vim models/model_builder.py^M[m
+[33m  3 [m[34m^[[m[?1049h[34m^[[m[?1h[34m^[[m=[34m^[[m[2;1H½[34m^[[m[6n[34m^[[m[2;1H  [34m^[[m[1;1H[34m^[[m]11;?[34m^G^[[m[1;52r[34m^[[m[?12;25h[34m^[[m[?12l[34m^[[m[?25h[34m^[[m[27m[34m^[[m[23m[34m^[[m[m[34m^[[m[H[34m^[[m[2J[34m^[[m[?25l[34m^[[m[52;1H[31m"models/model_builder.py"[m 388L, 15778C[34m^[[m[[[4;1H[33m    [m>c[34m^[[m[1;1H[34m^[[m[33m  1 [34m^[[m[m[34m^[[m[34m#  Copyright (c) 2018 PaddlePaddle Authors. All Rights Reserve.[34m^[[m[m[34m^M[m
+[33m  4 [m[34m^[[m[33m  2 [34m^[[m[m[34m^[[m[34m#[34m^[[m[m[34m^M[m
+[33m  5 [m[34m^[[m[33m  3 [34m^[[m[m[34m^[[m[34m#Licensed under the Apache License, Version 2.0 (the [31m"License"[m);[34m^[[m[m[34m^M[m
+[33m  6 [m[34m^[[m[33m  4 [34m^[[m[m[34m^[[m[34m#you may not use this file except in compliance with the License.[34m^[[m[m[34m^M[m
+[33m  7 [m[34m^[[m[33m  5 [34m^[[m[m[34m^[[m[34m#You may obtain a copy of the License at[34m^[[m[m[34m^M[m
+[33m  8 [m[34m^[[m[33m  6 [34m^[[m[m[34m^[[m[34m#[34m^[[m[m[34m^M[m
+[33m  9 [m[34m^[[m[33m  7 [34m^[[m[m[34m^[[m[34m#    http://www.apache.org/licenses/LICENSE-2.0[34m^[[m[m[34m^M[m
+[33m 10 [m[34m^[[m[33m  8 [34m^[[m[m[34m^[[m[34m#[34m^[[m[m[34m^M[m
+[33m 11 [m[34m^[[m[33m  9 [34m^[[m[m[34m^[[m[34m#Unless required by applicable law or agreed to in writing, software[34m^[[m[m[34m^M[m
+[33m 12 [m[34m^[[m[33m 10 [34m^[[m[m[34m^[[m[34m#distributed under the License is distributed on an [31m"AS IS"[m BASIS,[34m^[[m[m[34m^M[m
+[33m 13 [m[34m^[[m[33m 11 [34m^[[m[m[34m^[[m[34m#WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.[34m^[[m[m[34m^M[m
+[33m 14 [m[34m^[[m[33m 12 [34m^[[m[m[34m^[[m[34m#See the License for the specific language governing permissions and[34m^[[m[m[34m^M[m
+[33m 15 [m[34m^[[m[33m 13 [34m^[[m[m[34m^[[m[34m#limitations under the License.[34m^[[m[m[34m^M[m
+[33m 16 [m[34m^[[m[33m 14 [34m^[[m[m[34m^[[m[35mimport[34m^[[m[m numpy [34m^[[m[33mas[34m^[[m[m np[34m^M[m
+[33m 17 [m[34m^[[m[33m 15 [34m^[[m[m[34m^[[m[35mimport[34m^[[m[m paddle.fluid [34m^[[m[33mas[34m^[[m[m fluid[34m^M[m
+[33m 18 [m[34m^[[m[33m 16 [34m^[[m[m[34m^[[m[35mfrom[34m^[[m[m paddle.fluid.param_attr [34m^[[m[35mimport[34m^[[m[m ParamAttr[34m^M[m
+[33m 19 [m[34m^[[m[33m 17 [34m^[[m[m[34m^[[m[35mfrom[34m^[[m[m paddle.fluid.initializer [34m^[[m[35mimport[34m^[[m[m Constant[34m^M[m
+[33m 20 [m[34m^[[m[33m 18 [34m^[[m[m[34m^[[m[35mfrom[34m^[[m[m paddle.fluid.initializer [34m^[[m[35mimport[34m^[[m[m Normal[34m^M[m
+[33m 21 [m[34m^[[m[33m 19 [34m^[[m[m[34m^[[m[35mfrom[34m^[[m[m paddle.fluid.initializer [34m^[[m[35mimport[34m^[[m[m MSRA[34m^M[m
+[33m 22 [m[34m^[[m[33m 20 [34m^[[m[m[34m^[[m[35mfrom[34m^[[m[m paddle.fluid.regularizer [34m^[[m[35mimport[34m^[[m[m L2Decay[34m^M[m
+[33m 23 [m[34m^[[m[33m 21 [34m^[[m[m[34m^[[m[35mfrom[34m^[[m[m config [34m^[[m[35mimport[34m^[[m[m cfg[34m^M[m
+[33m 24 [m[34m^[[m[33m 22 [34m^M[m
+[33m 25 [m 23 [34m^M[m
+[33m 26 [m 24 class[34m^[[m[m [34m^[[m[36mRetinaNet[34m^[[m[m([34m^[[m[36mobject[34m^[[m[m):[34m^M[m
+[33m 27 [m[34m^[[m[33m 25 [34m^[[m[m    [34m^[[m[33mdef[34m^[[m[m [34m^[[m[36m__init__[34m^[[m[m(self,[34m^M[m
+[33m 28 [m[34m^[[m[33m 26 [34m^[[m[m[34m^[[m[17Cadd_conv_body_func=[34m^[[m[36mNone[34m^[[m[m,[34m^M[m
+[33m 29 [m[34m^[[m[33m 27 [34m^[[m[m[34m^[[m[17Cadd_fpn_neck_func=[34m^[[m[36mNone[34m^[[m[m,[34m^M[m
+[33m 30 [m[34m^[[m[33m 28 [34m^[[m[m[34m^[[m[17Canchor_strides=[[34m^[[m[31m8[34m^[[m[m, [34m^[[m[31m16[34m^[[m[m, [34m^[[m[31m32[34m^[[m[m, [34m^[[m[31m64[34m^[[m[m, [34m^[[m[31m128[34m^[[m[m],[34m^M[m
+[33m 31 [m[34m^[[m[33m 29 [34m^[[m[m[34m^[[m[17Cmode=[34m^[[m[31m[31m'train'[m[34m^[[m[m,[34m^M[m
+[33m 32 [m[34m^[[m[33m 30 [34m^[[m[m[34m^[[m[17Cuse_pyreader=[34m^[[m[36mTrue[34m^[[m[m,[34m^M[m
+[33m 33 [m[34m^[[m[33m 31 [34m^[[m[m[34m^[[m[17Cuse_random=[34m^[[m[36mTrue[34m^[[m[m):[34m^M[m
+[33m 34 [m[34m^[[m[33m 32 [34m^[[m[m[34m^[[m[8Cself.add_conv_body_func = add_conv_body_func[34m^M[m
+[33m 35 [m[34m^[[m[33m 33 [34m^[[m[m[34m^[[m[8Cself.add_fpn_neck_func = add_fpn_neck_func[34m^M[m
+[33m 36 [m[34m^[[m[33m 34 [34m^[[m[m[34m^[[m[8Cself.mode = mode[34m^M[m
+[33m 37 [m[34m^[[m[33m 35 [34m^[[m[m[34m^[[m[8Cself.use_pyreader = use_pyreader[34m^M[m
+[33m 38 [m[34m^[[m[33m 36 [34m^[[m[m[34m^[[m[8Cself.use_random = use_random[34m^M[m
+[33m 39 [m[34m^[[m[33m 37 [34m^[[m[m[34m^[[m[8Cself.anchor_strides = anchor_strides[34m^M[m
+[33m 40 [m[34m^[[m[33m 38 [34m^M[m
+[33m 41 [m 39 [34m^[[m[m    [34m^[[m[33mdef[34m^[[m[m [34m^[[m[36mbuild_model[34m^[[m[m(self, image_shape):[34m^M[m
+[33m 42 [m[34m^[[m[33m 40 [34m^[[m[m[34m^[[m[8Cself.build_input(image_shape)[34m^M[m
+[33m 43 [m[34m^[[m[33m 41 [34m^[[m[m[34m^[[m[8C[34m^[[m[34m# backbone[34m^[[m[m[34m^M[m
+[33m 44 [m[34m^[[m[33m 42 [34m^[[m[m[34m^[[m[8Cfeat_layers = self.extract_feat(self.image)[34m^M[m
+[33m 45 [m[34m^[[m[33m 43 [34m^[[m[m[34m^[[m[8C[34m^[[m[34m# bbox head[34m^[[m[m[34m^M[m
+[33m 46 [m[34m^[[m[33m 44 [34m^[[m[m[34m^[[m[8Cself.retina_heads(feat_layers)[34m^M[m
+[33m 47 [m[34m^[[m[33m 45 [34m^M[m
+[33m 48 [m 46 [34m^[[m[8Cif[34m^[[m[m self.mode != [34m^[[m[31m[31m'train'[m[34m^[[m[m:[34m^M[m
+[33m 49 [m[34m^[[m[33m 47 [34m^[[m[m[34m^[[m[12Cself.eval_bbox()[34m^M[m
+[33m 50 [m[34m^[[m[33m 48 [34m^M[m[52;156H1,1[11CTop[1;5H[?12l[?25h[?25l[52;156H2[2;5H[?12l[?25h[?25l[52;156H3[3;5H[?12l[?25h[?25l[52;156H4[5;5H[?12l[?25h[?25l[52;156H5[6;5H[?12l[?25h[?25l[52;156H6[7;5H[?12l[?25h[?25l[52;156H7[8;5H[?12l[?25h[?25l[52;156H8[9;5H[?12l[?25h[?25l[52;156H9[10;5H[?12l[?25h[?25l[52;156H10,1[11;5H[?12l[?25h[?25l[52;157H1[12;5H[?12l[?25h[?25l[52;157H2[13;5H[?12l[?25h[?25l[52;157H3[14;5H[?12l[?25h[?25l[52;157H4[15;5H[?12l[?25h[?25l[52;157H5[16;5H[?12l[?25h[?25l[52;157H6[17;5H[?12l[?25h[?25l[52;157H7[18;5H[?12l[?25h[?25l[52;157H8[19;5H[?12l[?25h[?25l[52;157H9[20;5H[?12l[?25h[?25l[52;156H20[21;5H[?12l[?25h[?25l[52;157H1[22;5H[?12l[?25h[?25l[52;157H2[23;5H[?12l[?25h[?25l[52;157H3[24;5H[?12l[?25h[?25l[52;157H4[25;5H[?12l[?25h[?25l[52;157H5[26;5H[?12l[?25h[?25l[52;157H6[27;5H[?12l[?25h[?25l[52;157H7[28;5H[?12l[?25h[?25l[52;157H8[29;5H[?12l[?25h[?25l[52;157H9[30;5H[?12l[?25h[?25l[52;156H30[31;5H[?12l[?25h[?25l[52;157H1[32;5H[?12l[?25h[?25l[52;157H2[33;5H[?12l[?25h[?25l[52;157H3[34;5H[?12l[?25h[?25l[52;157H4[35;5H[?12l[?25h[?25l[52;157H5[36;5H[?12l[?25h[?25l[52;157H6[37;5H[?12l[?25h[?25l[52;157H7[38;5H[?12l[?25h[?25l[52;157H8[39;5H[?12l[?25h[?25l[52;157H9[40;5H[?12l[?25h[?25l[52;156H40[41;5H[?12l[?25h[?25l[52;157H1[42;5H[?12l[?25h[?25l[52;157H2[43;5H[?12l[?25h[?25l[52;157H3[44;5H[?12l[?25h[?25l[52;157H4[45;5H[?12l[?25h[?25l[52;157H5[46;5H[?12l[?25h[?25l[52;157H6[47;5H[?12l[?25h[?25l[52;157H7[48;5H[?12l[?25h[?25l[52;157H8[49;5H[?12l[?25h[?25l[52;157H9[50;5H[?12l[?25h[?25l[52;156H50[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 51 [m 49 [34m^M[m[52;1H[K[52;156H51,1[11C0%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 52 [m 50 [34m^[[m[m    [34m^[[m[33mdef[34m^[[m[m [34m^[[m[36meval_bbox_out[34m^[[m[m(self):[34m^M[m[52;156H[K[52;156H52,1[11C1%[51;5H[?12l[?25h[?25l[1;51r[1;1H[2M[1;52r[50;1H[33m 53 [m[34m^[[m[33m 51 [34m^[[m[8Creturn[34m^[[m[m self.pred_result[34m^[[m[52;156H1,1[34m^[[m[11CTop[34m^[[m[1;5H[34m^[[m[?12l[34m^[[m[?25h[34m^G^[[m[?25l[34m^[[m[52;1H[34m^[[m[K[34m^[[m[52;1H:[34m^[[m[?12l[34m^[[m[?25hq[34m^M^[[m[?25l[34m^[[m[52;1H[34m^[[m[K[34m^[[m[52;1H[34m^[[m[?1l[34m^[[m>[34m^^[m[51;1H[33m    [m[34m[[m[?12l[34m^[[m[?25h[34m^[[m[?1049l# python eval_coco_map.py --pretrained_model=output/model_final/ --data_dir=dataset/coco/COCO17[34m^M[m[52;156H[K[52;156H53,1[11C1%[50;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 54 [m[34m^M[m[52;156H[K[52;156H54,1[11C2%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 55 [m-----------  Configuration Arguments -----------[34m^M[m[52;156H[K[52;156H55,1[11C3%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 56 [mbatch_size_per_im: 512[34m^M[m[52;156H[K[52;156H56,1[11C3%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 57 [mclass_num: 81[34m^M[m[52;156H[K[52;156H57,1[11C4%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 58 [mdata_dir: dataset/coco/COCO17[34m^M[m[52;156H[K[52;156H58,1[11C5%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 59 [mdataset: coco2017[34m^M[m[52;156H[K[52;156H59,1[11C5%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 60 [mdraw_threshold: 0.8[34m^M[m[52;156H[K[52;156H60,1[11C6%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 61 [menable_ce: False[34m^M[m[52;156H[K[52;156H61,1[11C6%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 62 [mim_per_batch: 1[34m^M[m[52;156H[K[52;156H62,1[11C7%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 63 [mimage_path: dataset/coco/val2017[34m^M[m[52;156H[K[52;156H63,1[11C8%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 64 [mlearning_rate: 0.01[34m^M[m[52;156H[K[52;156H64,1[11C8%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 65 [mlog_window: 20[34m^M[m[52;156H[K[52;156H65,1[11C9%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 66 [mmax_iter: 180000[34m^M[m[52;156H[K[52;156H66,1[10C10%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 67 [mmax_size: 1333[34m^M[m[52;156H[K[52;156H67,1[10C10%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 68 [mmodel_save_dir: output[34m^M[m[52;156H[K[52;156H68,1[10C11%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 69 [mnms_thresh: 0.5[34m^M[m[52;156H[K[52;156H69,1[10C11%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 70 [mnum_gpus: 1[34m^M[m[52;156H[K[52;156H70,1[10C12%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 71 [mpadding_minibatch: False[34m^M[m[52;156H[K[52;156H71,1[10C13%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 72 [mparallel: True[34m^M[m[52;156H[K[52;156H72,1[10C13%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 73 [mpixel_means: [102.9801, 115.9465, 122.7717][34m^M[m[52;156H[K[52;156H73,1[10C14%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 74 [mpretrained_model: output/model_final/[34m^M[m[52;156H[K[52;156H74,1[10C15%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 75 [mscales: [800][34m^M[m[52;156H[K[52;156H75,1[10C15%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 76 [mscore_thresh: 0.05[34m^M[m[52;156H[K[52;156H76,1[10C16%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 77 [msnapshot_stride: 10000[34m^M[m[52;156H[K[52;156H77,1[10C16%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 78 [muse_gpu: True[34m^M[m[52;156H[K[52;156H78,1[10C17%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 79 [muse_profile: False[34m^M[m[52;156H[K[52;156H79,1[10C18%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 80 [muse_pyreader: True[34m^M[m[52;156H[K[52;156H80,1[10C18%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 81 [m------------------------------------------------[34m^M[m[52;156H[K[52;156H81,1[10C19%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 82 [mloading annotations into memory...[34m^M[m[52;156H[K[52;156H82,1[10C20%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 83 [mDone (t=0.91s)[34m^M[m[52;156H[K[52;156H83,1[10C20%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 84 [mcreating index...[34m^M[m[52;156H[K[52;156H84,1[10C21%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 85 [mindex created![34m^M[m[52;156H[K[52;156H85,1[10C22%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 86 [mend_level: 3[34m^M[m[52;156H[K[52;156H86,1[10C22%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 87 [mused_body_levels: 3[34m^M[m[52;156H[K[52;156H87,1[10C23%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 88 [mname: [31m"tmp_0"[m[34m^M[m[52;156H[K[52;156H88,1[10C23%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 89 [mtype {[34m^M[m[52;156H[K[52;156H89,1[10C24%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 90 [m  type: LOD_TENSOR[34m^M[m[52;156H[K[52;156H90,1[10C25%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 91 [m  lod_tensor {[34m^M[m[52;156H[K[52;156H91,1[10C25%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 92 [m    tensor {[34m^M[m[52;156H[K[52;156H92,1[10C26%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 93 [m      data_type: FP32[34m^M[m[52;156H[K[52;156H93,1[10C27%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 94 [m      dims: -1[34m^M[m[52;156H[K[52;156H94,1[10C27%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 95 [m      dims: -1[34m^M[m[52;156H[K[52;156H95,1[10C28%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 96 [m      dims: 4[34m^M[m[52;156H[K[52;156H96,1[10C28%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 97 [m    }[34m^M[m[52;156H[K[52;156H97,1[10C29%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 98 [m    lod_level: 0[34m^M[m[52;156H[K[52;156H98,1[10C30%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 99 [m  }[34m^M[m[52;156H[K[52;156H99,1[10C30%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[40;10H[46m{[m[51;1H[33m100 [m[46m}[m[34m^M[m[52;156H[K[52;156H100,1[9C31%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[39;10H{[50;5H}
+[33m101 [m[34m^M[m[52;156H[K[52;156H101,1[9C32%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m102 [mname: [31m"tmp_1"[m[34m^M[m[52;156H[K[52;156H102,1[9C32%[51;5H[?12l[?25h[?25l[1;51r[1;1H[2M[1;52r[50;1H[33m103 [mtype {[34m^M[m
+[33m104 [m  type: LOD_TENSOR[34m^M[m[52;156H[K[52;156H103,1[9C33%[50;5H[?12l[?25h[?25l[52;158H4[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m105 [m  lod_tensor {[34m^M[m[52;156H[K[52;156H105,1[9C34%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m106 [m    tensor {[34m^M[m[52;156H[K[52;156H106,1[9C34%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m107 [m      data_type: FP32[34m^M[m[52;156H[K[52;156H107,1[9C35%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m108 [m      dims: -1[34m^M[m[52;156H[K[52;156H108,1[9C36%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m109 [m      dims: -1[34m^M[m[52;156H[K[52;156H109,1[9C36%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m110 [m      dims: 4[34m^M[m[52;156H[K[52;156H110,1[9C37%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m111 [m    }[34m^M[m[52;156H[K[52;156H111,1[9C37%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m112 [m    lod_level: 0[34m^M[m[52;156H[K[52;156H112,1[9C38%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m113 [m  }[34m^M[m[52;156H[K[52;156H113,1[9C39%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[40;10H[46m{[m[51;1H[33m114 [m[46m}[m[34m^M[m[52;156H[K[52;156H114,1[9C39%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[39;10H{[50;5H}
+[33m115 [m[34m^M[m[52;156H[K[52;156H115,1[9C40%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m116 [mname: [31m"tmp_2"[m[34m^M[m[52;156H[K[52;156H116,1[9C41%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m117 [mtype {[34m^M[m[52;156H[K[52;156H117,1[9C41%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m118 [m  type: LOD_TENSOR[34m^M[m[52;156H[K[52;156H118,1[9C42%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m119 [m  lod_tensor {[34m^M[m[52;156H[K[52;156H119,1[9C43%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m120 [m    tensor {[34m^M[m[52;156H[K[52;156H120,1[9C43%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m121 [m      data_type: FP32[34m^M[m[52;156H[K[52;156H121,1[9C44%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m122 [m      dims: -1[34m^M[m[52;156H[K[52;156H122,1[9C44%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m123 [m      dims: -1[34m^M[m[52;156H[K[52;156H123,1[9C45%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m124 [m      dims: 4[34m^M[m[52;156H[K[52;156H124,1[9C46%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m125 [m    }[34m^M[m[52;156H[K[52;156H125,1[9C46%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m126 [m    lod_level: 0[34m^M[m[52;156H[K[52;156H126,1[9C47%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m127 [m  }[34m^M[m[52;156H[K[52;156H127,1[9C48%[51;5H[?12l[?25h[?25l[52;158H6[50;5H[?12l[?25h[?25l[52;158H5[49;5H[?12l[?25h[?25l[52;158H4[48;5H[?12l[?25h[?25l[52;158H3[47;5H[?12l[?25h[?25l[52;158H2[46;5H[?12l[?25h[?25l[52;158H1[45;5H[?12l[?25h[?25l[52;158H0[44;5H[?12l[?25h[?25l[52;157H19[43;5H[?12l[?25h[?25l[52;158H8[42;5H[?12l[?25h[?25l[52;158H7[41;5H[?12l[?25h[?25l[52;158H6[40;5H[?12l[?25h[?25l[52;158H5[39;5H[?12l[?25h[?25l[27;10H[46m{[38;5H}[m[52;158H4[38;5H[?12l[?25h[?25l[27;10H{[38;5H}[52;158H3[37;5H[?12l[?25h[?25l[52;158H2[36;5H[?12l[?25h[?25l[52;158H1[35;5H[?12l[?25h[?25l[52;158H0[34;5H[?12l[?25h[?25l[52;157H09[33;5H[?12l[?25h[?25l[52;158H8[32;5H[?12l[?25h[?25l[52;158H7[31;5H[?12l[?25h[?25l[52;158H8[32;5H[?12l[?25h[?25l[52;158H9[33;5H[?12l[?25h[?25l[52;157H10[34;5H[?12l[?25h[?25l[52;158H1[35;5H[?12l[?25h[?25l[52;158H2[36;5H[?12l[?25h[?25l[52;158H3[37;5H[?12l[?25h[?25l[27;10H[46m{[38;5H}[m[52;158H4[38;5H[?12l[?25h[?25l[27;10H{[38;5H}[52;158H5[39;5H[?12l[?25h[?25l[52;158H6[40;5H[?12l[?25h[?25l[52;158H7[41;5H[?12l[?25h[?25l[52;158H8[42;5H[?12l[?25h[?25l[52;158H9[43;5H[?12l[?25h[?25l[52;157H20[44;5H[?12l[?25h[?25l[52;158H1[45;5H[?12l[?25h[?25l[52;158H2[46;5H[?12l[?25h[?25l[52;158H3[47;5H[?12l[?25h[?25l[52;158H4[48;5H[?12l[?25h[?25l[52;158H5[49;5H[?12l[?25h[?25l[52;158H6[50;5H[?12l[?25h[?25l[52;158H7[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[40;10H[46m{[m[51;1H[33m128 [m[46m}[m[34m^M[m[52;156H[K[52;156H128,1[9C48%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[39;10H{[50;5H}
+[33m129 [m[34m^M[m[52;156H[K[52;156H129,1[9C49%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m130 [mname: [31m"tmp_3"[m[34m^M[m[52;156H[K[52;156H130,1[9C50%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m131 [mtype {[34m^M[m[52;156H[K[52;156H131,1[9C50%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m132 [m  type: LOD_TENSOR[34m^M[m[52;156H[K[52;156H132,1[9C51%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m133 [m  lod_tensor {[34m^M[m[52;156H[K[52;156H133,1[9C51%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m134 [m    tensor {[34m^M[m[52;156H[K[52;156H134,1[9C52%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m135 [m      data_type: FP32[34m^M[m[52;156H[K[52;156H135,1[9C53%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m136 [m      dims: -1[34m^M[m[52;156H[K[52;156H136,1[9C53%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m137 [m      dims: -1[34m^M[m[52;156H[K[52;156H137,1[9C54%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m138 [m      dims: 4[34m^M[m[52;156H[K[52;156H138,1[9C55%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m139 [m    }[34m^M[m[52;156H[K[52;156H139,1[9C55%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m140 [m    lod_level: 0[34m^M[m[52;156H[K[52;156H140,1[9C56%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m141 [m  }[34m^M[m[52;156H[K[52;156H141,1[9C56%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[40;10H[46m{[m[51;1H[33m142 [m[46m}[m[34m^M[m[52;156H[K[52;156H142,1[9C57%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[39;10H{[50;5H}
+[33m143 [m[34m^M[m[52;156H[K[52;156H143,1[9C58%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m144 [mname: [31m"tmp_4"[m[34m^M[m[52;156H[K[52;156H144,1[9C58%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m145 [mtype {[34m^M[m[52;156H[K[52;156H145,1[9C59%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m146 [m  type: LOD_TENSOR[34m^M[m[52;156H[K[52;156H146,1[9C60%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m147 [m  lod_tensor {[34m^M[m[52;156H[K[52;156H147,1[9C60%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m148 [m    tensor {[34m^M[m[52;156H[K[52;156H148,1[9C61%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m149 [m      data_type: FP32[34m^M[m[52;156H[K[52;156H149,1[9C62%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m150 [m      dims: -1[34m^M[m[52;156H[K[52;156H150,1[9C62%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m151 [m      dims: -1[34m^M[m[52;156H[K[52;156H151,1[9C63%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m152 [m      dims: 4[34m^M[m[52;156H[K[52;156H152,1[9C63%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m153 [m    }[34m^M[m[52;156H[K[52;156H153,1[9C64%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m154 [m    lod_level: 0[34m^M[m[52;156H[K[52;156H154,1[9C65%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m155 [m  }[34m^M[m[52;156H[K[52;156H155,1[9C65%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[40;10H[46m{[m[51;1H[33m156 [m[46m}[m[34m^M[m[52;156H[K[52;156H156,1[9C66%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[39;10H{[50;5H}
+[33m157 [m[34m^M[m[52;156H[K[52;156H157,1[9C67%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m158 [mW0513 05:57:41.479151 98870 device_context.cc:261] Please NOTE: device: 0, CUDA Capability: 70, Driver API Version: 10.1, Runtime API Version: 9.0[34m^M[m[52;156H[K[52;156H158,1[9C67%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m159 [mW0513 05:57:41.484347 98870 device_context.cc:269] device: 0, cuDNN Version: 7.0.[34m^M[m[52;156H[K[52;156H159,1[9C68%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m160 [mCreating: coco2017[34m^M[m[52;156H[K[52;156H160,1[9C68%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m161 [mfile_list: dataset/coco/COCO17/annotations/instances_val2017.json[34m^M[m[52;156H[K[52;156H161,1[9C69%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m162 [mloading annotations into memory...[34m^M[m[52;156H[K[52;156H162,1[9C70%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m163 [mDone (t=0.97s)[34m^M[m[52;156H[K[52;156H163,1[9C70%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m164 [mcreating index...[34m^M[m[52;156H[K[52;156H164,1[9C71%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m165 [mindex created![34m^M[m[52;156H[K[52;156H165,1[9C72%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m166 [m^[[A^[[A^[[A^[[A^[[A^[[A^[[A^[[A^[[A^[[A^[[A^[[A^[[A^[[ALoaded dataset: coco2017[34m^M[m[52;156H[K[52;156H166,1[9C72%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m167 [m5000 roidb entries[34m^M[m[52;156H[K[52;156H167,1[9C73%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m168 [mval on coco2017 with 5000 roidbs[34m^M[m[52;156H[K[52;156H168,1[9C74%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m169 [mbegin run[34m^M[m[52;156H[K[52;156H169,1[9C74%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m170 [m1557727065  The content of decoded_box:     Tensor[tmp_0][34m^M[m[52;156H[K[52;156H170,1[9C75%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m171 [m    shape: [1,135900,4,][34m^M[m[52;156H[K[52;156H171,1-4[7C75%[51;8H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m172 [m    dtype: f[34m^M[m[52;156H[K[52;156H172,1-4[7C76%[51;8H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m173 [m    data: -10.8628,-4.95698,12.9546,7.55361,-14.0339,-7.49451,15.1843,8.90162,-16.3459,-10.1038,[34m^M[m[52;156H[K[52;156H173,1-4[7C77%[51;8H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m174 [m1557727065  The content of im_info:     Tensor[im_info][34m^M[m[52;156H[K[52;156H174,1[9C77%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m175 [m    shape: [1,3,][34m^M[m[52;156H[K[52;156H175,1-4[7C78%[51;8H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m176 [m    dtype: f[34m^M[m[52;156H[K[52;156H176,1-4[7C79%[51;8H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m177 [m    data: 800,1202,1.87793,[34m^M[m[52;156H[K[52;156H177,1-4[7C79%[51;8H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m178 [m*** Aborted at 1557727065 (unix time) try [31m"date -d @1557727065"[m if you are using GNU date ***[34m^M[m[52;156H[K[52;156H178,1[9C80%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m179 [mPC: @[16C0x0 (unknown)[34m^M[m[52;156H[K[52;156H179,1[9C81%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m180 [m*** SIGSEGV (@0xfffffffffffffff0) received by PID 98870 (TID 0x7fb6d88dd700) from PID 18446744073709551600; stack trace: ***[34m^M[m[52;156H[K[52;156H180,1[9C81%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m181 [m    @     0x7fb6d84c2390 (unknown)[34m^M[m[52;156H[K[52;156H181,1[9C82%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m182 [m    @     0x7fb60474d5a5 paddle::operators::GPUBoxClipKernel<>::Compute()[34m^M[m[52;156H[K[52;156H182,1[9C82%[51;5H[?12l[?25h[?25l[1;51r[1;1H[2M[1;52r[50;1H[33m183 [m    @     0x7fb60474e3df _ZNSt17_Function_handlerIFvRKN6paddle9framework16ExecutionContextEEZNKS1_24OpKernelRegistrarFunctorINS0_8platform9CUDAPlaceELb0ELm0EJNS0_9operatt[51;1H[33m    [mors16GPUBoxClipKernelINS7_17CUDADeviceContextEfEENSA_ISB_dEEEEclEPKcSG_iEUlS4_E_E9_M_invokeERKSt9_Any_dataS4_[34m^M[m[52;156H[K[52;156H183,1[9C83%[50;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m184 [m    @     0x7fb604c6a651 paddle::framework::OperatorWithKernel::RunImpl()[34m^M[m[52;156H[K[52;156H184,1[9C84%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m185 [m    @     0x7fb604c6b6a3 paddle::framework::OperatorWithKernel::RunImpl()[34m^M[m[52;156H[K[52;156H185,1[9C84%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m186 [m    @     0x7fb604c64dde paddle::framework::OperatorBase::Run()[34m^M[m[52;156H[K[52;156H186,1[9C85%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m187 [m    @     0x7fb6030b325e paddle::framework::Executor::RunPreparedContext()[34m^M[m[52;156H[K[52;156H187,1[9C86%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m188 [m    @     0x7fb6030b631d paddle::framework::Executor::Run()[34m^M[m[52;156H[K[52;156H188,1[9C86%[51;5H[?12l[?25h[?25l[1;51r[1;1H[3M[1;52r[49;1H[33m189 [m    @     0x7fb602ed4226 _ZZN8pybind1112cpp_function10initializeIZN6paddle6pybindL18pybind11_init_coreERNS_6moduleEEUlRNS2_9framework8ExecutorERKNS6_11ProgramDescEPNS6_55[50;1H[33m    [mScopeEibbRKSt6vectorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaISK_EEE97_vJS8_SB_SD_ibbSO_EJNS_4nameENS_9is_methodENS_7siblingEEEEvOT_PFT0_DpT1_EDpRKT2_ENUlRR[51;1H[33m    [mNS_6detail13function_callEE1_4_FUNES16_[34m^M[m[52;156H[K[52;156H189,1[9C87%[49;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m190 [m    @     0x7fb602f222d4 pybind11::cpp_function::dispatcher()[34m^M[m[52;156H[K[52;156H190,1[9C88%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m191 [m    @[11C0x4c5326 PyEval_EvalFrameEx[34m^M[m[52;156H[K[52;156H191,1[9C88%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m192 [m    @[11C0x4b9b66 PyEval_EvalCodeEx[34m^M[m[52;156H[K[52;156H192,1[9C89%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m193 [m    @[11C0x4c1f56 PyEval_EvalFrameEx[34m^M[m[52;156H[K[52;156H193,1[9C90%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m194 [m    @[11C0x4b9b66 PyEval_EvalCodeEx[34m^M[m[52;156H[K[52;156H194,1[9C90%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m195 [m    @[11C0x4c17c6 PyEval_EvalFrameEx[34m^M[m[52;156H[K[52;156H195,1[9C91%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m196 [m    @[11C0x4b9b66 PyEval_EvalCodeEx[34m^M[m[52;156H[K[52;156H196,1[9C91%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m197 [m    @[11C0x4c1f56 PyEval_EvalFrameEx[34m^M[m[52;156H[K[52;156H197,1[9C92%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m198 [m    @[11C0x4b9b66 PyEval_EvalCodeEx[34m^M[m[52;156H[K[52;156H198,1[9C93%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m199 [m    @[11C0x4eb69f (unknown)[34m^M[m[52;156H[K[52;156H199,1[9C93%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m200 [m    @[11C0x4e58f2 PyRun_FileExFlags[34m^M[m[52;156H[K[52;156H200,1[9C94%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m201 [m    @[11C0x4e41a6 PyRun_SimpleFileExFlags[34m^M[m[52;156H[K[52;156H201,1[9C95%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m202 [m    @[11C0x4938ce Py_Main[34m^M[m[52;156H[K[52;156H202,1[9C95%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m203 [m    @     0x7fb6d8107830 __libc_start_main[34m^M[m[52;156H[K[52;156H203,1[9C96%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m204 [m    @[11C0x493299 _start[34m^M[m[52;156H[K[52;156H204,1[9C96%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m205 [m    @[16C0x0 (unknown)[34m^M[m[52;156H[K[52;156H205,1[9C97%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m206 [mSegmentation fault[34m^M[m[52;156H[K[52;156H206,1[9C98%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m207 [m[34m# # vim typescript^M[m[52;156H[K[52;156H207,1[9C98%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m208 [msh: 4: [34m^[[m[A[34m^[[m[A[34m^[[m[A[34m^[[m[A[34m^[[m[A[34m^[[m[A[34m^[[m[A[34m^[[m[A[34m^[[m[A[34m^[[m[A[34m^[[m[A[34m^[[m[A[34m^[[m[A[34m^[[m[Avim: not found[34m^M[m[52;156H[K[52;156H208,1[9C99%[51;5H[?12l[?25h[?25l[1;51r[1;1H[3M[1;52r[49;1H[33m209 [m[34m# ^[^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^^[m[50;1H[33m    [m[34m[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[[m[51;1H[33m    [m[34m[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[m[52;156H[K[52;156H209,1[9CBot[49;5H[?12l[?25h[?25l[52;158H8[48;5H[?12l[?25h[?25l[52;158H7[47;5H[?12l[?25h[?25l[52;158H6[46;5H[?12l[?25h[?25l[52;158H5[45;5H[?12l[?25h[?25l[52;158H4[44;5H[?12l[?25h[?25l[52;158H3[43;5H[?12l[?25h[?25l[52;158H2[42;5H[?12l[?25h[?25l[52;158H1[41;5H[?12l[?25h[?25l[52;158H0[40;5H[?12l[?25h[?25l[52;156H199[39;5H[?12l[?25h[?25l[52;158H8[38;5H[?12l[?25h[?25l[52;158H7[37;5H[?12l[?25h[?25l[52;158H6[36;5H[?12l[?25h[?25l[52;158H5[35;5H[?12l[?25h[?25l[52;158H4[34;5H[?12l[?25h[?25l[52;158H3[33;5H[?12l[?25h[?25l[52;158H2[32;5H[?12l[?25h[?25l[52;158H3[33;5H[?12l[?25h[?25l[52;158H4[34;5H[?12l[?25h[?25l[52;158H5[35;5H[?12l[?25h[?25l[52;158H6[36;5H[?12l[?25h[?25l[52;158H7[37;5H[?12l[?25h[?25l[52;158H8[38;5H[?12l[?25h[?25l[52;158H9[39;5H[?12l[?25h[?25l[52;156H200[40;5H[?12l[?25h[?25l[52;158H1[41;5H[?12l[?25h[?25l[52;158H2[42;5H[?12l[?25h[?25l[52;158H3[43;5H[?12l[?25h[?25l[52;158H4[44;5H[?12l[?25h[?25l[52;158H5[45;5H[?12l[?25h[?25l[52;158H6[46;5H[?12l[?25h[?25l[52;158H7[47;5H[?12l[?25h[?25l[52;158H8[48;5H[?12l[?25h[?25l[52;158H9[49;5H[?12l[?25h[?25l[52;156H[K[52;1H:[?12l[?25ha[?25l[52;1H[K[52;1H[?12l[?25h:q
+[?25l[?12l[?25h[?25l[?12l[?25h[?25l[?12l[?25h[?25l[?12l[?25h[?25l[?12l[?25hni[?25l[52;2H[K[52;2H[?12l[?25h[?25l[52;1H[K[52;1H[?12l[?25h[1;1H[L[?25l[1;1H[33m169 [mbegin run[34m^M[m[2;2H[33m70[m[1C1557727065  The content of decoded_box:     Tensor[tmp_0][34m^M[m[3;2H[33m71[m[1C    shape: [1,135900,4,][34m^M[m[3;31H[K[4;2H[33m72[m[1C    dtype: f[34m^M[m[4;19H[K[5;2H[33m73[m[1C    data: -10.8628,-4.95698,12.9546,7.55361,-14.0339,-7.49451,15.1843,8.90162,-16.3459,-10.1038,[34m^M[m[6;2H[33m74[m[1C1557727065  The content of im_info:     Tensor[im_info][34m^M[m[7;3H[33m5[m[1C    shape: [1,3,][34m^M[m[7;24H[K[8;3H[33m6[m[5Cdtype: f[34m^M[m[8;19H[K[9;3H[33m7[m[6Cata: 800,1202,1.87793,[34m^M[m[10;3H[33m8[m[1C*** Aborted at 1557727065 (unix time) try [31m"date -d @1557727065"[m if you are using GNU date ***[34m^M[m[10;100H[K[11;3H[33m9[m[1CPC: @                0x0 (unknown)[34m^M[m[11;45H[K[12;2H[33m80[m[1C*** SIGSEGV (@0xfffffffffffffff0) received by PID 98870 (TID 0x7fb6d88dd700) from PID 18446744073709551600; stack trace: ***[34m^M[m[13;2H[33m81[m[5C@     0x7fb6d84c2390 (unknown)[34m^M[m[14;2H[33m82[m[5C@     0x7fb60474d5a5 paddle::operators::GPUBoxClipKernel<>::Compute()[34m^M[m[15;2H[33m83[m[1C    @     0x7fb60474e3df _ZNSt17_Function_handlerIFvRKN6paddle9framework16ExecutionContextEEZNKS1_24OpKernelRegistrarFunctorINS0_8platform9CUDAPlaceELb0ELm0EJNS0_9operatt[16;1H[33m   [m[1Cors16GPUBoxClipKernelINS7_17CUDADeviceContextEfEENSA_ISB_dEEEEclEPKcSG_iEUlS4_E_E9_M_invokeERKSt9_Any_dataS4_[34m^M[m[17;3H[33m4[m[1C    @     0x7fb604c6a651 paddle::framework::OperatorWithKernel::RunImpl()[34m^M[m[17;80H[K[18;3H[33m5[m[17C04c6b6a3 paddle::framework::OperatorWithKernel::RunImpl()[34m^M[m[19;3H[33m6[m[19Cc64dde[9Cframework::OperatorBase::Run()[34m^M[m[19;70H[K[20;3H[33m7[m[18C30b325e paddle::framework::Executor::RunPreparedContext()[34m^M[m[20;81H[K[21;1H[33m188[m[1C    @     0x7fb6030b631d paddle::framework::Executor::Run()[34m^M[m[21;66H[K[22;3H[33m9[m[18C2ed4226 _ZZN8pybind1112cpp_function10initializeIZN6paddle6pybindL18pybind11_init_coreERNS_6moduleEEUlRNS2_9framework8ExecutorERKNS6_11ProgramDescEPNS6_55[23;1H[33m   [m[1CScopeEibbRKSt6vectorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaISK_EEE97_vJS8_SB_SD_ibbSO_EJNS_4nameENS_9is_methodENS_7siblingEEEEvOT_PFT0_DpT1_EDpRKT2_ENUlRR[24;1H[33m   [m[1CNS_6detail13function_callEE1_4_FUNES16_[34m^M[m[24;46H[K[25;2H[33m90[m[18C2f222d4 pybind11::cpp_function::dispatcher()[34m^M[m[25;68H[K[26;2H[33m91[m[11C      0x4c5326 PyEval_EvalFrameEx[34m^M[m[26;50H[K[27;2H[33m92[m[11C      0x4b9b66 PyEval_EvalCodeEx[34m^M[m[27;49H[K[28;1H[33m193[m[1C    @           0x4c1f56 PyEval_EvalFrameEx[34m^M[m[28;50H[K[29;1H[33m194[m[1C    @           0x4b9b66 PyEval_EvalCodeEx[34m^M[m[30;3H[33m5[m[11C      0x4c17c6 PyEval_EvalFrameEx[34m^M[m[30;50H[K[31;3H[33m6[m[20Cb9b6[13CCodeEx[34m^M[m[31;49H[K[32;3H[33m7[m[20Cc1f5[13CFrameEx[34m^M[m[33;3H[33m8[m[20Cb9b6[13CCodeEx[34m^M[m[33;49H[K[34;3H[33m9[m[20Ceb69f (unknown)[34m^M[m[34;41H[K[35;1H[33m200[m[20Ce58f2 PyRun_FileExFlags[34m^M[m[35;49H[K[36;1H[33m201[m[20Ce41a6 PyRun_SimpleFileExFlags[34m^M[m
+[33m202[m[20C938ce Py_Main[34m^M[m[37;39H[K[38;1H[33m203[m[11C0x7fb6d8107830 __libc_start_main
+[33m204[m[20C93299 _start[34m^M[m[39;38H[K[40;3H[33m5[m[17C     0x0 (unknown)[34m^M[m[40;41H[K[41;3H[33m6[m[1CSegmentation fault[34m^M[m[41;25H[K[42;3H[33m7[m[1C[34m# # vim typescript^M[m[42;25H[K[43;3H[33m8[m[1Csh: 4: [34m^[[m[A[34m^[[m[A[34m^[[m[A[34m^[[m[A[34m^[[m[A[34m^[[m[A[34m^[[m[A[34m^[[m[A[34m^[[m[A[34m^[[m[A[34m^[[m[A[34m^[[m[A[34m^[[m[A[34m^[[m[Avim: not found[34m^M[m[44;3H[33m9[m[1C[34m# ^[^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^^[m[45;1H[33m   [m[1C[34m[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[[m[46;1H[33m   [m[1C[34m[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[m[47;2H[33m10[m[1C:q[47;7H[K[48;2H[33m11[m[48;5H[K[49;2H[33m12[m[49;5H[K[50;1H[33m213[m[50;5H[K[51;1H[33m214[m[51;5H[K[52;1H[K[52;156H214,0-1[7CBot[51;5H[?12l[?25h[?25l
+[1m-- INSERT --[m[52;156H[K[52;156H214,1[9CBot[51;5H[?12l[?25h[?25lt[52;160H2[51;6H[?12l[?25h[?25l[51;5H[K[52;160H1[51;5H[?12l[?25h[?25l[1m[34m~                                                                                                                                                                            [m[52;158H3[50;5H[?12l[?25h[52;1H[K[50;5H[?25l[52;156H213,0-1[7CBot[50;5H[?12l[?25h[?25l[52;156H[K[52;1H:[?12l[?25hq[?25l[1m[37m[41mE37: No write since last change (add ! to override)[m[104C213,0-1[7CBot[50;5H[?12l[?25h[?25l[52;1H[K[52;1H:[?12l[?25hq![?25l[52;1H[K[52;1H[?1l>[?12l[?25h[?1049l# vim models/model_builder.py
+[?1049h[?1h=[2;1H½[6n[2;1H  [1;1H]11;?[1;52r[?12;25h[?12l[?25h[27m[23m[m[H[2J[?25l[52;1H"models/model_builder.py" 388L, 15778C[>c[1;1H[33m  1 [m[34m#  Copyright (c) 2018 PaddlePaddle Authors. All Rights Reserve.[m
+[33m  2 [m[34m#[m
+[33m  3 [m[34m#Licensed under the Apache License, Version 2.0 (the "License");[m
+[33m  4 [m[34m#you may not use this file except in compliance with the License.[m
+[33m  5 [m[34m#You may obtain a copy of the License at[m
+[33m  6 [m[34m#[m
+[33m  7 [m[34m#    http://www.apache.org/licenses/LICENSE-2.0[m
+[33m  8 [m[34m#[m
+[33m  9 [m[34m#Unless required by applicable law or agreed to in writing, software[m
+[33m 10 [m[34m#distributed under the License is distributed on an "AS IS" BASIS,[m
+[33m 11 [m[34m#WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.[m
+[33m 12 [m[34m#See the License for the specific language governing permissions and[m
+[33m 13 [m[34m#limitations under the License.[m
+[33m 14 [m[35mimport[m numpy [33mas[m np
+[33m 15 [m[35mimport[m paddle.fluid [33mas[m fluid
+[33m 16 [m[35mfrom[m paddle.fluid.param_attr [35mimport[m ParamAttr
+[33m 17 [m[35mfrom[m paddle.fluid.initializer [35mimport[m Constant
+[33m 18 [m[35mfrom[m paddle.fluid.initializer [35mimport[m Normal
+[33m 19 [m[35mfrom[m paddle.fluid.initializer [35mimport[m MSRA
+[33m 20 [m[35mfrom[m paddle.fluid.regularizer [35mimport[m L2Decay
+[33m 21 [m[35mfrom[m config [35mimport[m cfg
+[33m 22 
+ 23 
+ 24 class[m [36mRetinaNet[m([36mobject[m):
+[33m 25 [m    [33mdef[m [36m__init__[m(self,
+[33m 26 [m[17Cadd_conv_body_func=[36mNone[m,
+[33m 27 [m[17Cadd_fpn_neck_func=[36mNone[m,
+[33m 28 [m[17Canchor_strides=[[31m8[m, [31m16[m, [31m32[m, [31m64[m, [31m128[m],
+[33m 29 [m[17Cmode=[31m'train'[m,
+[33m 30 [m[17Cuse_pyreader=[36mTrue[m,
+[33m 31 [m[17Cuse_random=[36mTrue[m):
+[33m 32 [m[8Cself.add_conv_body_func = add_conv_body_func
+[33m 33 [m[8Cself.add_fpn_neck_func = add_fpn_neck_func
+[33m 34 [m[8Cself.mode = mode
+[33m 35 [m[8Cself.use_pyreader = use_pyreader
+[33m 36 [m[8Cself.use_random = use_random
+[33m 37 [m[8Cself.anchor_strides = anchor_strides
+[33m 38 
+ 39 [m    [33mdef[m [36mbuild_model[m(self, image_shape):
+[33m 40 [m[8Cself.build_input(image_shape)
+[33m 41 [m[8C[34m# backbone[m
+[33m 42 [m[8Cfeat_layers = self.extract_feat(self.image)
+[33m 43 [m[8C[34m# bbox head[m
+[33m 44 [m[8Cself.retina_heads(feat_layers)
+[33m 45 
+ 46 [8Cif[m self.mode != [31m'train'[m:
+[33m 47 [m[12Cself.eval_bbox()
+[33m 48 
+ 49 
+ 50 [m    [33mdef[m [36meval_bbox_out[m(self):
+[33m 51 [8Creturn[m self.pred_result[52;156H1,1[11CTop[1;5H[?12l[?25h[?25l[52;156H2[2;5H[?12l[?25h[?25l[52;156H3[3;5H[?12l[?25h[?25l[52;156H4[4;5H[?12l[?25h[?25l[52;156H5[5;5H[?12l[?25h[?25l[52;156H6[6;5H[?12l[?25h[?25l[52;156H7[7;5H[?12l[?25h[?25l[52;156H8[8;5H[?12l[?25h[?25l[52;156H9[9;5H[?12l[?25h[?25l[52;156H10,1[10;5H[?12l[?25h[?25l[52;157H1[11;5H[?12l[?25h[?25l[52;157H2[12;5H[?12l[?25h[?25l[52;157H3[13;5H[?12l[?25h[?25l[52;157H4[14;5H[?12l[?25h[?25l[52;157H5[15;5H[?12l[?25h[?25l[52;157H6[16;5H[?12l[?25h[?25l[52;157H7[17;5H[?12l[?25h[?25l[52;157H8[18;5H[?12l[?25h[?25l[52;157H9[19;5H[?12l[?25h[?25l[52;156H20[20;5H[?12l[?25h[?25l[52;157H1[21;5H[?12l[?25h[?25l[52;157H2,0-1[22;5H[?12l[?25h[?25l[52;157H3[23;5H[?12l[?25h[?25l[52;157H4,1  [24;5H[?12l[?25h[?25l[52;157H5[25;5H[?12l[?25h[?25l[52;157H6[26;5H[?12l[?25h[?25l[52;157H7[27;5H[?12l[?25h[?25l[52;157H8[28;5H[?12l[?25h[?25l[52;157H9[29;5H[?12l[?25h[?25l[52;156H30[30;5H[?12l[?25h[?25l[52;157H1[31;5H[?12l[?25h[?25l[52;157H2[32;5H[?12l[?25h[?25l[52;157H3[33;5H[?12l[?25h[?25l[52;157H4[34;5H[?12l[?25h[?25l[52;157H5[35;5H[?12l[?25h[?25l[52;157H6[36;5H[?12l[?25h[?25l[52;157H7[37;5H[?12l[?25h[?25l[52;157H8,0-1[38;5H[?12l[?25h[?25l[52;157H9,1  [39;5H[?12l[?25h[?25l[52;156H40[40;5H[?12l[?25h[?25l[52;157H1[41;5H[?12l[?25h[?25l[52;157H2[42;5H[?12l[?25h[?25l[52;157H3[43;5H[?12l[?25h[?25l[52;157H4[44;5H[?12l[?25h[?25l[52;157H5,0-1[45;5H[?12l[?25h[?25l[52;157H6,1  [46;5H[?12l[?25h[?25l[52;157H7[47;5H[?12l[?25h[?25l[52;157H8[48;5H[?12l[?25h[?25l[52;157H9,0-1[49;5H[?12l[?25h[?25l[52;156H50,1  [50;5H[?12l[?25h[?25l[52;157H1[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 52 [m[52;1H[K[52;156H52,0-1[9C0%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 53 [m    [33mdef[m [36mbuild_input[m(self, image_shape):[52;156H[K[52;156H53,1[11C0%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 54 [8Cif[m self.use_pyreader:[52;156H[K[52;156H54,1[11C0%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 55 [m[12Cin_shapes = [[-[31m1[m] + image_shape, [-[31m1[m, [31m4[m], [-[31m1[m, [31m1[m], [-[31m1[m, [31m1[m],[52;156H[K[52;156H55,1[11C1%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 56 [m[25C[-[31m1[m, [31m3[m], [-[31m1[m, [31m1[m]][52;156H[K[52;156H56,1[11C1%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 57 [m[12Clod_levels = [[31m0[m, [31m1[m, [31m1[m, [31m1[m, [31m0[m, [31m0[m][52;156H[K[52;156H57,1[11C1%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 58 [m[12Cdtypes = [[52;156H[K[52;156H58,1[11C2%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 59 [m[16C[31m'float32'[m, [31m'float32'[m, [31m'int32'[m, [31m'int32'[m, [31m'float32'[m, [31m'int32'[m[52;156H[K[52;156H59,1[11C2%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 60 [m[12C][52;156H[K[52;156H60,1[11C2%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 61 [m[12Cself.py_reader = fluid.layers.py_reader([52;156H[K[52;156H61,1[11C2%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 62 [m[16Ccapacity=[31m64[m,[52;156H[K[52;156H62,1[11C3%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 63 [m[16Cshapes=in_shapes,[52;156H[K[52;156H63,1[11C3%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 64 [m[16Clod_levels=lod_levels,[52;156H[K[52;156H64,1[11C3%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 65 [m[16Cdtypes=dtypes,[52;156H[K[52;156H65,1[11C4%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 66 [m[16Cuse_double_buffer=[36mTrue[m)[52;156H[K[52;156H66,1[11C4%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 67 [m[12Cins = fluid.layers.read_file(self.py_reader)[52;156H[K[52;156H67,1[11C4%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 68 [m[12Cself.image = ins[[31m0[m][52;156H[K[52;156H68,1[11C5%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 69 [m[12Cself.gt_box = ins[[31m1[m][52;156H[K[52;156H69,1[11C5%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 70 [m[12Cself.gt_label = ins[[31m2[m][52;156H[K[52;156H70,1[11C5%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 71 [m[12Cself.is_crowd = ins[[31m3[m][52;156H[K[52;156H71,1[11C5%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 72 [m[12Cself.im_info = ins[[31m4[m][52;156H[K[52;156H72,1[11C6%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 73 [m[12Cself.im_id = ins[[31m5[m][52;156H[K[52;156H73,1[11C6%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 74 [8Celse[m:[52;156H[K[52;156H74,1[11C6%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 75 [m[12Cself.image = fluid.layers.data([52;156H[K[52;156H75,1[11C7%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 76 [m[16Cname=[31m'image'[m, shape=image_shape, dtype=[31m'float32'[m)[52;156H[K[52;156H76,1[11C7%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 77 [m[12Cself.gt_box = fluid.layers.data([52;156H[K[52;156H77,1[11C7%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 78 [m[16Cname=[31m'gt_box'[m, shape=[[31m4[m], dtype=[31m'float32'[m, lod_level=[31m1[m)[52;156H[K[52;156H78,1[11C8%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 79 [m[12Cself.gt_label = fluid.layers.data([52;156H[K[52;156H79,1[11C8%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 80 [m[16Cname=[31m'gt_label'[m, shape=[[31m1[m], dtype=[31m'int32'[m, lod_level=[31m1[m)[52;156H[K[52;156H80,1[11C8%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 81 [m[12Cself.is_crowd = fluid.layers.data([52;156H[K[52;156H81,1[11C8%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 82 [m[16Cname=[31m'is_crowd'[m, shape=[[31m1[m], dtype=[31m'int32'[m, lod_level=[31m1[m)[52;156H[K[52;156H82,1[11C9%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 83 [m[12Cself.im_info = fluid.layers.data([52;156H[K[52;156H83,1[11C9%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 84 [m[16Cname=[31m'im_info'[m, shape=[[31m3[m], dtype=[31m'float32'[m)[52;156H[K[52;156H84,1[11C9%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 85 [m[12Cself.im_id = fluid.layers.data([52;156H[K[52;156H85,1[10C10%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 86 [m[16Cname=[31m'im_id'[m, shape=[[31m1[m], dtype=[31m'int32'[m)[52;156H[K[52;156H86,1[10C10%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 87 [m[52;156H[K[52;156H87,0-1[8C10%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 88 [m    [33mdef[m [36mfeeds[m(self):[52;156H[K[52;156H88,1[10C10%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 89 [8Cif[m self.mode == [31m'infer'[m:[52;156H[K[52;156H89,1[10C11%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 90 [12Creturn[m [self.image, self.im_info][52;156H[K[52;156H90,1[10C11%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 91 [8Cif[m self.mode == [31m'val'[m:[52;156H[K[52;156H91,1[10C11%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 92 [12Creturn[m [self.image, self.im_info, self.im_id][52;156H[K[52;156H92,1[10C12%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 93 [8Creturn[m [[52;156H[K[52;156H93,1[10C12%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 94 [m[12Cself.image, self.gt_box, self.gt_label, self.is_crowd,[52;156H[K[52;156H94,1[10C12%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 95 [m[12Cself.im_info, self.im_id[52;156H[K[52;156H95,1[10C13%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 96 [m[8C][52;156H[K[52;156H96,1[10C13%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 97 [m[52;156H[K[52;156H97,0-1[8C13%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 98 [m    [33mdef[m [36meval_bbox[m(self):[52;156H[K[52;156H98,1[10C13%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 99 [m[8Cboxes = [][52;156H[K[52;156H99,1[10C14%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m100 [m[8Cscores = [][52;156H[K[52;156H100,1[9C14%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m101 [m[8Cself.im_scale = fluid.layers.slice([52;156H[K[52;156H101,1[9C14%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m102 [m[12Cself.im_info, [[31m1[m], starts=[[31m2[m], ends=[[31m3[m])[52;156H[K[52;156H102,1[9C15%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m103 [m[52;156H[K[52;156H103,1[9C15%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m104 [8Cfor[m i [33min[m [36mrange[m([36mlen[m(self.cls_score)):[52;156H[K[52;156H104,1[9C15%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m105 [m[12C[34m#fluid.layers.Print(self.cls_score[i], summarize=10, message="The content of cls_score[{}]: ".format(i))[m[52;156H[K[52;156H105,1[9C16%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m106 [m[12Ccls_prob = fluid.layers.sigmoid(self.cls_score[i])[52;156H[K[52;156H106,1[9C16%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m107 [m[12C[34m#fluid.layers.Print(cls_prob, summarize=10, message="The content of cls_prob[{}]: ".format(i))[m[52;156H[K[52;156H107,1[9C16%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m108 [m[12Canchor = fluid.layers.reshape(self.anchors[i], shape=[-[31m1[m,[31m4[m])[52;156H[K[52;156H108,1[9C16%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m109 [m[12Cvar = fluid.layers.reshape(self.vars[i], shape=[-[31m1[m,[31m4[m])[52;156H[K[52;156H109,1[9C17%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m110 [m[12Corig_shape = fluid.layers.shape(self.bbox_pred[i])[52;156H[K[52;156H110,1[9C17%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m111 [m[12Cbbox_pred_reshape = fluid.layers.transpose([52;156H[K[52;156H111,1[9C17%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m112 [m[16Cself.bbox_pred[i], perm=[[31m0[m, [31m2[m, [31m3[m, [31m1[m])[52;156H[K[52;156H112,1[9C18%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m113 [m[12Cbbox_pred_reshape = fluid.layers.reshape(bbox_pred_reshape, shape=[[31m0[m,-[31m1[m,[31m4[m])[52;156H[K[52;156H113,1[9C18%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m114 [m[12Cdecoded_box = fluid.layers.box_coder([52;156H[K[52;156H114,1[9C18%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m115 [m[16Cprior_box=anchor,[52;156H[K[52;156H115,1[9C18%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m116 [m[16Cprior_box_var=var,[52;156H[K[52;156H116,1[9C19%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m117 [m[16Ctarget_box=bbox_pred_reshape,[52;156H[K[52;156H117,1[9C19%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m118 [m[16Ccode_type=[31m'decode_center_size'[m,[52;156H[K[52;156H118,1[9C19%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m119 [m[16Cbox_normalized=[36mFalse[m,[52;156H[K[52;156H119,1[9C20%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m120 [m[16Caxis=[31m0[m)[52;156H[K[52;156H120,1[9C20%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m121 [m[12C[34m#im_scale_lod = fluid.layers.sequence_expand(self.im_scale, decoded_box)[m[52;156H[K[52;156H121,1[9C20%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m122 [m[12Cdecoded_box = decoded_box / self.im_scale[52;156H[K[52;156H122,1[9C21%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m123 [m[12Cfluid.layers.Print(decoded_box, summarize=[31m10[m, message=[31m"The content of decoded_box: "[m)[52;156H[K[52;156H123,1[9C21%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m124 [m[12Cfluid.layers.Print(self.im_info, summarize=[31m10[m, message=[31m"The content of im_info: "[m)[52;156H[K[52;156H124,1[9C21%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m125 [m[12C[36mprint[m(decoded_box)[52;156H[K[52;156H125,1[9C21%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m126 [m[12Ccliped_box = fluid.layers.box_clip([36minput[m=decoded_box, im_info=self.im_info)[52;156H[K[52;156H126,1[9C22%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m127 [m[52;156H[K[52;156H127,0-1[7C22%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m128 [m[12Cexpand_box = fluid.layers.reshape(x=cliped_box, shape=(-[31m1[m,[31m1[m,[31m4[m))[52;156H[K[52;156H128,1[9C22%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m129 [m[12Cexpand_box = fluid.layers.expand(x=expand_box, expand_times=[[31m1[m, cfg.class_num-[31m1[m, [31m1[m])[52;156H[K[52;156H129,1[9C23%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m130 [m[52;156H[K[52;156H130,0-1[7C23%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m131 [m[12Ccls_score_reshape = fluid.layers.transpose([52;156H[K[52;156H131,1[9C23%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m132 [m[16Cself.cls_score[i], perm=[[31m0[m, [31m2[m, [31m3[m, [31m1[m])[52;156H[K[52;156H132,1[9C24%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m133 [m[12Ccls_score_reshape = fluid.layers.reshape([52;156H[K[52;156H133,1[9C24%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m134 [m[16Cx=cls_score_reshape, shape=(-[31m1[m, cfg.class_num - [31m1[m))[52;156H[K[52;156H134,1[9C24%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m135 [m[52;156H[K[52;156H135,0-1[7C24%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m136 [m[12Cboxes.append(expand_box)[52;156H[K[52;156H136,1[9C25%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m137 [m[12Cscores.append(cls_score_reshape)[52;156H[K[52;156H137,1[9C25%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m138 [m[52;156H[K[52;156H138,0-1[7C25%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m139 [m[52;156H[K[52;156H139,0-1[7C26%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m140 [m[8Cboxes_list = fluid.layers.concat(boxes, axis=[31m0[m)[52;156H[K[52;156H140,1[9C26%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m141 [m[8Cscores_list = fluid.layers.concat(scores, axis=[31m0[m)[52;156H[K[52;156H141,1[9C26%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m142 [m[8Cfluid.layers.Print(boxes_list, summarize=[31m10[m, message=[31m"The content of boxes_list: "[m)[52;156H[K[52;156H142,1[9C27%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m143 [m[8Cfluid.layers.Print(scores_list, summarize=[31m10[m, message=[31m"The content of scores_list: "[m)[52;156H[K[52;156H143,1[9C27%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m144 [m[8Cself.pred_result = fluid.layers.multiclass_nms([52;156H[K[52;156H144,1[9C27%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m145 [m[12Cbboxes=boxes_list,[52;156H[K[52;156H145,1[9C27%[51;5H[?12l[?25h[?25l[52;158H4[50;5H[?12l[?25h[?25l[52;158H3[49;5H[?12l[?25h[?25l[52;158H2[48;5H[?12l[?25h[?25l[52;158H1[47;5H[?12l[?25h[?25l[52;158H0[46;5H[?12l[?25h[?25l[52;157H39,0-1[45;5H[?12l[?25h[?25l[52;158H8[44;5H[?12l[?25h[?25l[52;158H7,1  [43;5H[?12l[?25h[?25l[52;158H6[42;5H[?12l[?25h[?25l[52;158H5,0-1[41;5H[?12l[?25h[?25l[52;158H4,1  [40;5H[?12l[?25h[?25l[52;158H3[39;5H[?12l[?25h[?25l[52;158H2[38;5H[?12l[?25h[?25l[52;158H1[37;5H[?12l[?25h[?25l[52;158H0,0-1[36;5H[?12l[?25h[?25l[52;157H29,1  [35;5H[?12l[?25h[?25l[52;158H8[34;5H[?12l[?25h[?25l[52;158H7,0-1[33;5H[?12l[?25h[?25l[52;158H6,1  [32;5H[?12l[?25h[?25l[52;158H5[31;5H[?12l[?25h[?25l[52;158H4[30;5H[?12l[?25h[?25l[52;158H3[29;5H[?12l[?25h[?25l[52;158H2[28;5H[?12l[?25h[?25l[52;158H1[27;5H[?12l[?25h[?25l[52;158H0[26;5H[?12l[?25h[?25l[52;158H1[27;5H[?12l[?25h[?25l[52;160H2[27;6H[?12l[?25h[?25l[52;158H2[28;6H[?12l[?25h[?25l[52;158H3[29;6H[?12l[?25h[?25l[52;158H4[30;6H[?12l[?25h[?25l[52;160H3[30;7H[?12l[?25h[?25l[52;160H4[30;8H[?12l[?25h[?25l[52;160H5[30;9H[?12l[?25h[?25l[52;160H6[30;10H[?12l[?25h[?25l[52;160H7[30;11H[?12l[?25h[?25l[52;160H8[30;12H[?12l[?25h[?25l[52;160H9[30;13H[?12l[?25h[?25l[52;160H10[30;14H[?12l[?25h[?25l[52;161H1[30;15H[?12l[?25h[?25l[52;161H2[30;16H[?12l[?25h[?25l[52;161H3[30;17H[?12l[?25h[?25l[52;161H4[30;18H[?12l[?25h[?25l[52;158H5[31;18H[?12l[?25h[?25l[52;161H3[31;17H[?12l[?25h[?25l[52;1H[1m-- INSERT --[m[52;156H[K[52;156H125,14[8C27%[31;18H[?12l[?25h[?25lp[34m#rint(decoded_box)[m[52;161H5[31;19H[?12l[?25h[?25l[36mprint[m(decoded_box)[31;35H[K[52;161H4[31;18H[?12l[?25h[?25l[52;161H3[31;17H[?12l[?25h[?25l[34m#print(decoded_box)[m[52;161H4[31;18H[?12l[?25h[?25l[52;158H6[32;18H[?12l[?25h[?25l[52;161H3[32;17H[?12l[?25h[?25l[34m#cliped_box = fluid.layers.box_clip(input=decoded_box, im_info=self.im_info)[m[52;161H4[32;18H[?12l[?25h[?25l[52;158H7,1 [33;5H[?12l[?25h[?25l[52;160H5[33;9H[?12l[?25h[?25l[52;160H9[33;13H[?12l[?25h[?25l[52;160H13[33;17H[?12l[?25h[?25ldecoded_box[52;160H24[33;28H[?12l[?25h[?25l_[52;161H5[33;29H[?12l[?25h[?25lx[52;161H6[33;30H[?12l[?25h[?25li[52;161H7[33;31H[?12l[?25h[?25l[52;161H8[33;32H[?12l[?25h[?25l=[52;161H9[33;33H[?12l[?25h[?25l[52;160H30[33;34H[?12l[?25h[?25lf[52;161H1[33;35H[?12l[?25h[?25lk[52;161H2[33;36H[?12l[?25h[?25lu[52;161H3[33;37H[?12l[?25h[?25l[33;36H[K[52;161H2[33;36H[?12l[?25h[?25l[33;35H[K[52;161H1[33;35H[?12l[?25h[?25ll[52;161H2[33;36H[?12l[?25h[?25lu[52;161H3[33;37H[?12l[?25h[?25li[52;161H4[33;38H[?12l[?25h[?25ld[52;161H5[33;39H[?12l[?25h[?25l.[52;161H6[33;40H[?12l[?25h[?25ll[52;161H7[33;41H[?12l[?25h[?25la[52;161H8[33;42H[?12l[?25h[?25ly[52;161H9[33;43H[?12l[?25h[?25le[52;160H40[33;44H[?12l[?25h[?25lr[52;161H1[33;45H[?12l[?25h[?25ls[52;161H2[33;46H[?12l[?25h[?25l.[52;161H3[33;47H[?12l[?25h[?25lc[52;161H4[33;48H[?12l[?25h[?25ll[52;161H5[33;49H[?12l[?25h[?25li[52;161H6[33;50H[?12l[?25h[?25l[33;49H[K[52;161H5[33;49H[?12l[?25h[?25l[33;48H[K[52;161H4[33;48H[?12l[?25h[?25l[33;47H[K[52;161H3[33;47H[?12l[?25h[?25ls[52;161H4[33;48H[?12l[?25h[?25ll[52;161H5[33;49H[?12l[?25h[?25lo[52;161H6[33;50H[?12l[?25h[?25li[52;161H7[33;51H[?12l[?25h[?25lc[52;161H8[33;52H[?12l[?25h[?25l[33;51H[K[52;161H7[33;51H[?12l[?25h[?25l[33;50H[K[52;161H6[33;50H[?12l[?25h[?25l[33;49H[K[52;161H5[33;49H[?12l[?25h[?25l[33;48H[K[52;161H4[33;48H[?12l[?25h[?25ll[52;161H5[33;49H[?12l[?25h[?25li[52;161H6[33;50H[?12l[?25h[?25lc[52;161H7[33;51H[?12l[?25h[?25le[52;161H8[33;52H[?12l[?25h[?25l([52;161H9[33;53H[?12l[?25h[?25l)[46m()[m[52;160H50[33;54H[?12l[?25h[?25l[52;160H49[33;53H[?12l[?25h[?25l[52;160H50[33;54H[?12l[?25h[?25l[52;160H49[33;53H[?12l[?25h[?25l[46md[mecoded_box)[33;53Hd[10C[46m)[m[52;160H60[33;64H[?12l[?25h[?25l[46m,[m),[46m)[m[52;161H1[33;65H[?12l[?25h[?25l[46m [m) [46m)[m[52;161H2[33;66H[?12l[?25h[?25l[46ms[m)s[46m)[m[52;161H3[33;67H[?12l[?25h[?25l)[46m )[m[33;67H[K[52;161H2[33;66H[?12l[?25h[?25l[46ma[m)a[46m)[m[52;161H3[33;67H[?12l[?25h[?25l[46mx[m)x[46m)[m[52;161H4[33;68H[?12l[?25h[?25l[46mi[m)i[46m)[m[52;161H5[33;69H[?12l[?25h[?25l[46me[m)e[46m)[m[52;161H6[33;70H[?12l[?25h[?25l)[46m )[m[33;70H[K[52;161H5[33;69H[?12l[?25h[?25l)[46m )[m[33;69H[K[52;161H4[33;68H[?12l[?25h[?25l[46me[m)e[46m)[m[52;161H5[33;69H[?12l[?25h[?25l[46ms[m)s[46m)[m[52;161H6[33;70H[?12l[?25h[?25l[46m=[m)=[46m)[m[52;161H7[33;71H[?12l[?25h[?25l[46m[[m)[[46m)[m[52;161H8[33;72H[?12l[?25h[?25l[46m][m)][46m)[m[52;161H9[33;73H[?12l[?25h[?25l[33;52H([18C[46m[][m)[52;161H8[33;72H[?12l[?25h[?25l[31m[46m2[m])[31m2[m[46m][m[52;161H9[33;73H[?12l[?25h[?25l[33;52H[46m([m[18C[[1C][46m)[m[52;160H70[33;74H[?12l[?25h[?25l[46m,[m),[46m)[m[52;161H1[33;75H[?12l[?25h[?25l[46m [m) [46m)[m[52;161H2[33;76H[?12l[?25h[?25l[46ms[m)s[46m)[m[52;161H3[33;77H[?12l[?25h[?25l[46mt[m)t[46m)[m[52;161H4[33;78H[?12l[?25h[?25l[46ma[m)a[46m)[m[52;161H5[33;79H[?12l[?25h[?25l[46mr[m)r[46m)[m[52;161H6[33;80H[?12l[?25h[?25l[46mt[m)t[46m)[m[52;161H7[33;81H[?12l[?25h[?25l[46ms[m)s[46m)[m[52;161H8[33;82H[?12l[?25h[?25l[46m=[m)=[46m)[m[52;161H9[33;83H[?12l[?25h[?25l[46m[[m)[[46m)[m[52;160H80[33;84H[?12l[?25h[?25l[46m][m)][46m)[m[52;161H1[33;85H[?12l[?25h[?25l[33;52H([30C[46m[][m)[52;161H0[33;84H[?12l[?25h[?25l[31m[46m0[m])[31m0[m[46m][m[52;161H1[33;85H[?12l[?25h[?25l[33;52H[46m([m[30C[[1C][46m)[m[52;161H2[33;86H[?12l[?25h[?25l[46m,[m),[46m)[m[52;161H3[33;87H[?12l[?25h[?25l[46m [m) [46m)[m[52;161H4[33;88H[?12l[?25h[?25l[46me[m)e[46m)[m[52;161H5[33;89H[?12l[?25h[?25l[46mn[m)n[46m)[m[52;161H6[33;90H[?12l[?25h[?25l[46md[m)d[46m)[m[52;161H7[33;91H[?12l[?25h[?25l[46ms[m)s[46m)[m[52;161H8[33;92H[?12l[?25h[?25l[46m=[m)=[46m)[m[52;161H9[33;93H[?12l[?25h[?25l[46m[[m)[[46m)[m[52;160H90[33;94H[?12l[?25h[?25l[46m][m)][46m)[m[52;161H1[33;95H[?12l[?25h[?25l[33;52H([40C[46m[][m)[52;161H0[33;94H[?12l[?25h[?25l[31m[46m1[m])[31m1[m[46m][m[52;161H1[33;95H[?12l[?25h[?25l[33;52H[46m([m[40C[[1C][46m)[m[52;161H2[33;96H[?12l[?25h[?25l[52;161H3[33;97H[?12l[?25h[?25l[34;17H[K[35;43Hreshape(x=cliped_box, shape=(-[31m1[m,[31m1[m,[31m4[m))[35;81H[K[36;17Hexpand_box = fluid.layers.expand(x=expand_box, expand_times=[[31m1[m, cfg.class_num-[31m1[m, [31m1[m])[37;17H[K[38;17Hcls_score_reshape = fluid.layers.transpose([39;17H    self.cls_score[i], perm=[[31m0[m, [31m2[m, [31m3[m, [31m1[m])[40;17Hcls_score_reshape = fluid.layers.reshape([40;58H[K[41;21Hx=cls_score_reshape, shape=(-[31m1[m, cfg.class_num - [31m1[m))[42;17H[K[43;17Hboxes.append(expand_box)[43;41H[K[44;17Hscores.append(cls_score_reshape)[46;13H[K[47;13Hboxes_list = fluid.layers.concat(boxes, axis=[31m0[m)[47;60H[K[48;13Hscores_list = fluid.layers.concat(scores, axis=[31m0[m)[48;62H[K[49;32Hboxes_list, summarize=[31m10[m, message=[31m"The content of boxes_list: "[m)[49;96H[K[50;13Hfluid.layers.Print(scores_list, summarize=[31m10[m, message=[31m"The content of scores_list: "[m)[51;13Hself.pred_result = fluid.layers.multiclass_nms([33;52H([43C)[52;158H8,1[34;17H[?12l[?25h[?25ldecoded_box_xi = fluid.layers.slice(decoded_box, axes=[[31m2[m], starts=[[31m0[m], ends=[[31m1[m])[34;52H[46m([43C)[m[52;160H9[34;97H[?12l[?25h[?25l[52;161H2[34;96H[?12l[?25h[?25l[34;52H([40C[46m[[1C][m)[52;161H1[34;95H[?12l[?25h[?25l[52;161H0[34;94H[?12l[?25h[?25l[52;160H89[34;93H[?12l[?25h[?25l[[1C][52;161H8[34;92H[?12l[?25h[?25l[52;161H7[34;91H[?12l[?25h[?25l[52;161H6[34;90H[?12l[?25h[?25l[52;161H5[34;89H[?12l[?25h[?25l[52;161H4[34;88H[?12l[?25h[?25l[52;161H3[34;87H[?12l[?25h[?25l[46m[[1C][m[52;161H2[34;86H[?12l[?25h[?25l[52;161H1[34;85H[?12l[?25h[?25l[52;161H0[34;84H[?12l[?25h[?25l[52;160H79[34;83H[?12l[?25h[?25l[[1C][52;161H8[34;82H[?12l[?25h[?25l[52;161H7[34;81H[?12l[?25h[?25l[52;161H6[34;80H[?12l[?25h[?25l[52;161H5[34;79H[?12l[?25h[?25l[52;161H4[34;78H[?12l[?25h[?25l[52;161H3[34;77H[?12l[?25h[?25l[52;161H2[34;76H[?12l[?25h[?25l[52;161H1[34;75H[?12l[?25h[?25l[46m[[1C][m[52;161H0[34;74H[?12l[?25h[?25l[52;160H69[34;73H[?12l[?25h[?25l[52;161H8[34;72H[?12l[?25h[?25l[52;161H7[34;71H[?12l[?25h[?25l[[1C][52;161H6[34;70H[?12l[?25h[?25l[52;161H5[34;69H[?12l[?25h[?25l[52;161H4[34;68H[?12l[?25h[?25l[52;161H3[34;67H[?12l[?25h[?25l[52;161H2[34;66H[?12l[?25h[?25l[52;161H1[34;65H[?12l[?25h[?25l[52;161H0[34;64H[?12l[?25h[?25l[52;160H59[34;63H[?12l[?25h[?25l[52;161H8[34;62H[?12l[?25h[?25l[52;161H7[34;61H[?12l[?25h[?25l[52;161H6[34;60H[?12l[?25h[?25l[52;161H5[34;59H[?12l[?25h[?25l[52;161H4[34;58H[?12l[?25h[?25l[52;161H3[34;57H[?12l[?25h[?25l[52;161H2[34;56H[?12l[?25h[?25l[52;161H1[34;55H[?12l[?25h[?25l[52;161H0[34;54H[?12l[?25h[?25l[46m([43C)[m[52;160H49[34;53H[?12l[?25h[?25l[52;161H8[34;52H[?12l[?25h[?25l([43C)[52;161H7[34;51H[?12l[?25h[?25l[52;161H6[34;50H[?12l[?25h[?25l[52;161H5[34;49H[?12l[?25h[?25l[52;161H4[34;48H[?12l[?25h[?25l[52;161H3[34;47H[?12l[?25h[?25l[52;161H2[34;46H[?12l[?25h[?25l[52;161H1[34;45H[?12l[?25h[?25l[52;161H0[34;44H[?12l[?25h[?25l[52;160H39[34;43H[?12l[?25h[?25l[52;161H8[34;42H[?12l[?25h[?25l[52;161H7[34;41H[?12l[?25h[?25l[52;161H6[34;40H[?12l[?25h[?25l[52;161H5[34;39H[?12l[?25h[?25l[52;161H4[34;38H[?12l[?25h[?25l[52;161H3[34;37H[?12l[?25h[?25l[52;161H2[34;36H[?12l[?25h[?25l[52;161H1[34;35H[?12l[?25h[?25l[52;161H0[34;34H[?12l[?25h[?25l[52;160H29[34;33H[?12l[?25h[?25l[52;161H8[34;32H[?12l[?25h[?25l[52;161H7[34;31H[?12l[?25h[?25l[52;161H6[34;30H[?12l[?25h[?25li = fluid.layers.slice(decoded_box, axes=[[31m2[m], starts=[[31m0[m], ends=[[31m1[m])[34;96H[K[52;161H5[34;29H[?12l[?25h[?25lyi = fluid.layers.slice(decoded_box, axes=[[31m2[m], starts=[[31m0[m], ends=[[31m1[m])[52;161H6[34;30H[?12l[?25h[?25l[52;161H7[34;31H[?12l[?25h[?25l[52;161H8[34;32H[?12l[?25h[?25l[52;161H9[34;33H[?12l[?25h[?25l[52;160H30[34;34H[?12l[?25h[?25l[52;161H1[34;35H[?12l[?25h[?25l[52;161H2[34;36H[?12l[?25h[?25l[52;161H3[34;37H[?12l[?25h[?25l[52;161H4[34;38H[?12l[?25h[?25l[52;161H5[34;39H[?12l[?25h[?25l[52;161H6[34;40H[?12l[?25h[?25l[52;161H7[34;41H[?12l[?25h[?25l[52;161H8[34;42H[?12l[?25h[?25l[52;161H9[34;43H[?12l[?25h[?25l[52;160H40[34;44H[?12l[?25h[?25l[52;161H1[34;45H[?12l[?25h[?25l[52;161H2[34;46H[?12l[?25h[?25l[52;161H3[34;47H[?12l[?25h[?25l[52;161H4[34;48H[?12l[?25h[?25l[52;161H5[34;49H[?12l[?25h[?25l[52;161H6[34;50H[?12l[?25h[?25l[52;161H7[34;51H[?12l[?25h[?25le[46m([43C)[m[52;161H8[34;52H[?12l[?25h[?25l[52;161H9[34;53H[?12l[?25h[?25l([43C)[52;160H50[34;54H[?12l[?25h[?25l[52;161H1[34;55H[?12l[?25h[?25l[52;161H2[34;56H[?12l[?25h[?25l[52;161H3[34;57H[?12l[?25h[?25l[52;161H4[34;58H[?12l[?25h[?25l[52;161H5[34;59H[?12l[?25h[?25l[52;161H6[34;60H[?12l[?25h[?25l[52;161H7[34;61H[?12l[?25h[?25l[52;161H8[34;62H[?12l[?25h[?25l[52;161H9[34;63H[?12l[?25h[?25l[52;160H60[34;64H[?12l[?25h[?25l[52;161H1[34;65H[?12l[?25h[?25l[52;161H2[34;66H[?12l[?25h[?25l[52;161H3[34;67H[?12l[?25h[?25l[52;161H4[34;68H[?12l[?25h[?25l[52;161H5[34;69H[?12l[?25h[?25l[52;161H6[34;70H[?12l[?25h[?25l=[46m[[1C][m[52;161H7[34;71H[?12l[?25h[?25l[52;161H8[34;72H[?12l[?25h[?25l[52;161H9[34;73H[?12l[?25h[?25l[52;160H70[34;74H[?12l[?25h[?25l[[1C][52;161H1[34;75H[?12l[?25h[?25l[52;161H2[34;76H[?12l[?25h[?25l[52;161H3[34;77H[?12l[?25h[?25l[52;161H4[34;78H[?12l[?25h[?25l[52;161H5[34;79H[?12l[?25h[?25l[52;161H6[34;80H[?12l[?25h[?25l[52;161H7[34;81H[?12l[?25h[?25l[52;161H8[34;82H[?12l[?25h[?25l=[46m[[1C][m[52;161H9[34;83H[?12l[?25h[?25l[52;160H80[34;84H[?12l[?25h[?25l[52;161H1[34;85H[?12l[?25h[?25l][46m,[m ends=[[31m1[m])[34;96H[K[34;84H[46m][m,[52;161H0[34;84H[?12l[?25h[?25l[31m[46m1[m], ends=[[31m1[m])[34;84H[31m1[m[46m][m[52;161H1[34;85H[?12l[?25h[?25l[52;161H2[34;86H[?12l[?25h[?25l[[1C][52;161H3[34;87H[?12l[?25h[?25l[52;161H4[34;88H[?12l[?25h[?25l[52;161H5[34;89H[?12l[?25h[?25l[52;161H6[34;90H[?12l[?25h[?25l[52;161H7[34;91H[?12l[?25h[?25l[52;161H8[34;92H[?12l[?25h[?25l=[46m[[1C][m[52;161H9[34;93H[?12l[?25h[?25l[52;160H90[34;94H[?12l[?25h[?25l[52;161H1[34;95H[?12l[?25h[?25l][46m)[m[34;96H[K[34;94H[46m][m)[52;161H0[34;94H[?12l[?25h[?25l[31m[46m2[m])[31m2[m[46m][m[52;161H1[34;95H[?12l[?25h[?25l[34;52H[46m([m[40C[[1C][46m)[m[52;161H2[34;96H[?12l[?25h[?25l[52;161H3[34;97H[?12l[?25h[?25l[35;17H[K[36;43Hreshape(x=cliped_box, shape=(-[31m1[m,[31m1[m,[31m4[m))[36;81H[K[37;17Hexpand_box = fluid.layers.expand(x=expand_box, expand_times=[[31m1[m, cfg.class_num-[31m1[m, [31m1[m])[38;17H[K[39;17Hcls_score_reshape = fluid.layers.transpose([40;17H    self.cls_score[i], perm=[[31m0[m, [31m2[m, [31m3[m, [31m1[m])[41;17Hcls_score_reshape = fluid.layers.reshape([41;58H[K[42;21Hx=cls_score_reshape, shape=(-[31m1[m, cfg.class_num - [31m1[m))[43;17H[K[44;17Hboxes.append(expand_box)[44;41H[K[45;17Hscores.append(cls_score_reshape)[47;13H[K[48;13Hboxes_list = fluid.layers.concat(boxes, axis=[31m0[m)[48;60H[K[49;13Hscores_list = fluid.layers.concat(scores, axis=[31m0[m)[49;62H[K[50;32Hboxes_list, summarize=[31m10[m, message=[31m"The content of boxes_list: "[m)[50;96H[K[51;13Hfluid.layers.Print(scores_list, summarize=[31m10[m, message=[31m"The content of scores_list: "[m)[34;52H([43C)[52;158H9,1[35;17H[?12l[?25h[?25ldecoded_box_xi = fluid.layers.slice(decoded_box, axes=[[31m2[m], starts=[[31m0[m], ends=[[31m1[m])[36;17H[31m128[m             decoded_box_yi = fluid.layers.slice(decoded_box, axes=[[31m2[m], starts=[[31m1[m], ends=[[31m2[m])[37;43Hreshape(x=cliped_box, shape=(-[31m1[m,[31m1[m,[31m4[m))[37;81H[K[38;17Hexpand_box = fluid.layers.expand(x=expand_box, expand_times=[[31m1[m, cfg.class_num-[31m1[m, [31m1[m])[39;17H[K[40;17Hcls_score_reshape = fluid.layers.transpose([41;17H    self.cls_score[i], perm=[[31m0[m, [31m2[m, [31m3[m, [31m1[m])[42;17Hcls_score_reshape = fluid.layers.reshape([42;58H[K[43;21Hx=cls_score_reshape, shape=(-[31m1[m, cfg.class_num - [31m1[m))[44;17H[K[45;17Hboxes.append(expand_box)[45;41H[K[46;17Hscores.append(cls_score_reshape)[48;13H[K[49;13Hboxes_list = fluid.layers.concat(boxes, axis=[31m0[m)[49;60H[K[50;13Hscores_list = fluid.layers.concat(scores, axis=[31m0[m)[50;62H[K[51;32Hboxes_list, summarize=[31m10[m, message=[31m"The content of boxes_list: "[m)[51;96H[K[36;68H[46m([43C)[m[52;157H30,109[36;113H[?12l[?25h[?25l[52;162H8[36;112H[?12l[?25h[?25l[36;68H([40C[46m[[1C][m)[52;162H7[36;111H[?12l[?25h[?25l[52;162H6[36;110H[?12l[?25h[?25l[52;162H5[36;109H[?12l[?25h[?25l[[1C][52;162H4[36;108H[?12l[?25h[?25l[52;162H3[36;107H[?12l[?25h[?25l[52;162H2[36;106H[?12l[?25h[?25l[52;162H1[36;105H[?12l[?25h[?25l[52;162H0[36;104H[?12l[?25h[?25l[52;160H99 [36;103H[?12l[?25h[?25l[46m[[1C][m[52;161H8[36;102H[?12l[?25h[?25l[52;161H7[36;101H[?12l[?25h[?25l[52;161H6[36;100H[?12l[?25h[?25l[52;161H5[36;99H[?12l[?25h[?25l[[1C][52;161H4[36;98H[?12l[?25h[?25l[52;161H3[36;97H[?12l[?25h[?25l[52;161H2[36;96H[?12l[?25h[?25l[52;161H1[36;95H[?12l[?25h[?25l[52;161H0[36;94H[?12l[?25h[?25l[52;160H89[36;93H[?12l[?25h[?25l[52;161H8[36;92H[?12l[?25h[?25l[52;161H7[36;91H[?12l[?25h[?25l[46m[[1C][m[52;161H6[36;90H[?12l[?25h[?25l[52;161H5[36;89H[?12l[?25h[?25l[52;161H4[36;88H[?12l[?25h[?25l[52;161H3[36;87H[?12l[?25h[?25l[[1C][52;161H2[36;86H[?12l[?25h[?25l[52;161H1[36;85H[?12l[?25h[?25l[52;161H0[36;84H[?12l[?25h[?25l[52;160H79[36;83H[?12l[?25h[?25l[52;161H8[36;82H[?12l[?25h[?25l[52;161H7[36;81H[?12l[?25h[?25l[52;161H6[36;80H[?12l[?25h[?25l[52;161H5[36;79H[?12l[?25h[?25l[52;161H4[36;78H[?12l[?25h[?25l[52;161H3[36;77H[?12l[?25h[?25l[52;161H2[36;76H[?12l[?25h[?25l[52;161H1[36;75H[?12l[?25h[?25l[52;161H0[36;74H[?12l[?25h[?25l[52;160H69[36;73H[?12l[?25h[?25l[52;161H8[36;72H[?12l[?25h[?25l[52;161H7[36;71H[?12l[?25h[?25l[52;161H6[36;70H[?12l[?25h[?25l[46m([43C)[m[52;161H5[36;69H[?12l[?25h[?25l[52;161H4[36;68H[?12l[?25h[?25l([43C)[52;161H3[36;67H[?12l[?25h[?25l[52;161H2[36;66H[?12l[?25h[?25l[52;161H1[36;65H[?12l[?25h[?25l[52;161H0[36;64H[?12l[?25h[?25l[52;160H59[36;63H[?12l[?25h[?25l[52;161H8[36;62H[?12l[?25h[?25l[52;161H7[36;61H[?12l[?25h[?25l[52;161H6[36;60H[?12l[?25h[?25l[52;161H5[36;59H[?12l[?25h[?25l[52;161H4[36;58H[?12l[?25h[?25l[52;161H3[36;57H[?12l[?25h[?25l[52;161H2[36;56H[?12l[?25h[?25l[52;161H1[36;55H[?12l[?25h[?25l[52;161H0[36;54H[?12l[?25h[?25l[52;160H49[36;53H[?12l[?25h[?25l[52;161H8[36;52H[?12l[?25h[?25l[52;161H7[36;51H[?12l[?25h[?25l[52;161H6[36;50H[?12l[?25h[?25l[52;161H5[36;49H[?12l[?25h[?25l[52;161H4[36;48H[?12l[?25h[?25l[52;161H3[36;47H[?12l[?25h[?25l[52;161H2[36;46H[?12l[?25h[?25l[52;161H1[36;45H[?12l[?25h[?25l[52;161H0[36;44H[?12l[?25h[?25l[52;160H39[36;43H[?12l[?25h[?25l[52;161H8[36;42H[?12l[?25h[?25l[52;161H7[36;41H[?12l[?25h[?25l[52;161H6[36;40H[?12l[?25h[?25l[52;161H5[36;39H[?12l[?25h[?25l[52;161H4[36;38H[?12l[?25h[?25l[52;161H3[36;37H[?12l[?25h[?25l[52;161H2[36;36H[?12l[?25h[?25l[52;161H1[36;35H[?12l[?25h[?25l[52;161H0[36;34H[?12l[?25h[?25l[52;160H29[36;33H[?12l[?25h[?25ldecoded_box_yi = fluid.layers.slice(decoded_box, axes=[[31m2[m], starts=[[31m1[m], ends=[[31m2[m])[36;112H[K[52;161H8[36;32H[?12l[?25h[?25ldecoded_box_yi = fluid.layers.slice(decoded_box, axes=[[31m2[m], starts=[[31m1[m], ends=[[31m2[m])[36;111H[K[52;161H7[36;31H[?12l[?25h[?25ldecoded_box_yi = fluid.layers.slice(decoded_box, axes=[[31m2[m], starts=[[31m1[m], ends=[[31m2[m])[36;110H[K[52;161H6[36;30H[?12l[?25h[?25ldecoded_box_yi = fluid.layers.slice(decoded_box, axes=[[31m2[m], starts=[[31m1[m], ends=[[31m2[m])[36;109H[K[52;161H5[36;29H[?12l[?25h[?25ldecoded_box_yi = fluid.layers.slice(decoded_box, axes=[[31m2[m], starts=[[31m1[m], ends=[[31m2[m])[36;108H[K[52;161H4[36;28H[?12l[?25h[?25ldecoded_box_yi = fluid.layers.slice(decoded_box, axes=[[31m2[m], starts=[[31m1[m], ends=[[31m2[m])[36;107H[K[52;161H3[36;27H[?12l[?25h[?25ldecoded_box_yi = fluid.layers.slice(decoded_box, axes=[[31m2[m], starts=[[31m1[m], ends=[[31m2[m])[36;106H[K[52;161H2[36;26H[?12l[?25h[?25ldecoded_box_yi = fluid.layers.slice(decoded_box, axes=[[31m2[m], starts=[[31m1[m], ends=[[31m2[m])[36;105H[K[52;161H1[36;25H[?12l[?25h[?25ldecoded_box_yi = fluid.layers.slice(decoded_box, axes=[[31m2[m], starts=[[31m1[m], ends=[[31m2[m])[36;104H[K[52;161H0[36;24H[?12l[?25h[?25ldecoded_box_yi = fluid.layers.slice(decoded_box, axes=[[31m2[m], starts=[[31m1[m], ends=[[31m2[m])[36;103H[K[52;160H19[36;23H[?12l[?25h[?25ldecoded_box_yi = fluid.layers.slice(decoded_box, axes=[[31m2[m], starts=[[31m1[m], ends=[[31m2[m])[36;102H[K[52;161H8[36;22H[?12l[?25h[?25ldecoded_box_yi = fluid.layers.slice(decoded_box, axes=[[31m2[m], starts=[[31m1[m], ends=[[31m2[m])[36;101H[K[52;161H7[36;21H[?12l[?25h[?25l128decoded_box_yi = fluid.layers.slice(decoded_box, axes=[[31m2[m], starts=[[31m1[m], ends=[[31m2[m])[36;100H[K[52;161H6[36;20H[?12l[?25h[?25ldecoded_box_yi = fluid.layers.slice(decoded_box, axes=[[31m2[m], starts=[[31m1[m], ends=[[31m2[m])[36;99H[K[52;161H5[36;19H[?12l[?25h[?25ldecoded_box_yi = fluid.layers.slice(decoded_box, axes=[[31m2[m], starts=[[31m1[m], ends=[[31m2[m])[36;98H[K[52;161H4[36;18H[?12l[?25h[?25ldecoded_box_yi = fluid.layers.slice(decoded_box, axes=[[31m2[m], starts=[[31m1[m], ends=[[31m2[m])[36;97H[K[52;161H3[36;17H[?12l[?25h[?25l[52;161H4[36;18H[?12l[?25h[?25l[52;161H5[36;19H[?12l[?25h[?25l[52;161H6[36;20H[?12l[?25h[?25l[52;161H7[36;21H[?12l[?25h[?25l[52;161H8[36;22H[?12l[?25h[?25l[52;161H9[36;23H[?12l[?25h[?25l[52;160H20[36;24H[?12l[?25h[?25l[52;161H1[36;25H[?12l[?25h[?25l[52;161H2[36;26H[?12l[?25h[?25l[52;161H3[36;27H[?12l[?25h[?25l[52;161H4[36;28H[?12l[?25h[?25l[52;161H5[36;29H[?12l[?25h[?25l[52;161H6[36;30H[?12l[?25h[?25l[52;161H7[36;31H[?12l[?25h[?25l[52;161H8[36;32H[?12l[?25h[?25l[52;161H7[36;31H[?12l[?25h[?25l[52;161H6[36;30H[?12l[?25h[?25l[52;161H7[36;31H[?12l[?25h[?25l = fluid.layers.slice(decoded_box, axes=[[31m2[m], starts=[[31m1[m], ends=[[31m2[m])[36;96H[K[52;161H6[36;30H[?12l[?25h[?25la = fluid.layers.slice(decoded_box, axes=[[31m2[m], starts=[[31m1[m], ends=[[31m2[m])[52;161H7[36;31H[?12l[?25h[?25l[52;161H8[36;32H[?12l[?25h[?25l[52;161H9[36;33H[?12l[?25h[?25l[52;160H30[36;34H[?12l[?25h[?25l[52;161H1[36;35H[?12l[?25h[?25l[52;161H2[36;36H[?12l[?25h[?25l[52;161H3[36;37H[?12l[?25h[?25l[52;161H4[36;38H[?12l[?25h[?25l[52;161H5[36;39H[?12l[?25h[?25l[52;161H6[36;40H[?12l[?25h[?25l[52;161H7[36;41H[?12l[?25h[?25l[52;161H8[36;42H[?12l[?25h[?25l[52;161H9[36;43H[?12l[?25h[?25l[52;160H40[36;44H[?12l[?25h[?25l[52;161H1[36;45H[?12l[?25h[?25l[52;161H2[36;46H[?12l[?25h[?25l[52;161H3[36;47H[?12l[?25h[?25l[52;161H4[36;48H[?12l[?25h[?25l[52;161H5[36;49H[?12l[?25h[?25l[52;161H6[36;50H[?12l[?25h[?25l[52;161H7[36;51H[?12l[?25h[?25le[46m([43C)[m[52;161H8[36;52H[?12l[?25h[?25l[52;161H9[36;53H[?12l[?25h[?25l([43C)[52;160H50[36;54H[?12l[?25h[?25l[52;161H1[36;55H[?12l[?25h[?25l[52;161H2[36;56H[?12l[?25h[?25l[52;161H3[36;57H[?12l[?25h[?25l[52;161H4[36;58H[?12l[?25h[?25l[52;161H5[36;59H[?12l[?25h[?25l[52;161H6[36;60H[?12l[?25h[?25l[52;161H7[36;61H[?12l[?25h[?25l[52;161H8[36;62H[?12l[?25h[?25l[52;161H9[36;63H[?12l[?25h[?25l[52;160H60[36;64H[?12l[?25h[?25l[52;161H1[36;65H[?12l[?25h[?25l[52;161H2[36;66H[?12l[?25h[?25l[52;161H3[36;67H[?12l[?25h[?25l[52;161H4[36;68H[?12l[?25h[?25l[52;161H5[36;69H[?12l[?25h[?25l[52;161H6[36;70H[?12l[?25h[?25l=[46m[[1C][m[52;161H7[36;71H[?12l[?25h[?25l[52;161H8[36;72H[?12l[?25h[?25l[52;161H9[36;73H[?12l[?25h[?25l[52;160H70[36;74H[?12l[?25h[?25l[[1C][52;161H1[36;75H[?12l[?25h[?25l[52;161H2[36;76H[?12l[?25h[?25l[52;161H3[36;77H[?12l[?25h[?25l[52;161H4[36;78H[?12l[?25h[?25l[52;161H5[36;79H[?12l[?25h[?25l[52;161H6[36;80H[?12l[?25h[?25l[52;161H7[36;81H[?12l[?25h[?25l[52;161H8[36;82H[?12l[?25h[?25l=[46m[[1C][m[52;161H9[36;83H[?12l[?25h[?25l[52;160H80[36;84H[?12l[?25h[?25l[31m[46m1[m][46m,[m ends=[[31m2[m])[36;96H[K[36;83H[31m1[m],[52;160H79[36;83H[?12l[?25h[?25l[[31m1[m], ends=[[31m2[m])[36;83H[46m[[1C][m[52;160H80[36;84H[?12l[?25h[?25l[52;161H1[36;85H[?12l[?25h[?25l][46m,[m ends=[[31m2[m])[36;96H[K[36;84H[46m][m,[52;161H0[36;84H[?12l[?25h[?25l[31m[46m3[m], ends=[[31m2[m])[36;84H[31m3[m[46m][m[52;161H1[36;85H[?12l[?25h[?25l[52;161H2[36;86H[?12l[?25h[?25l[[1C][52;161H3[36;87H[?12l[?25h[?25l[52;161H4[36;88H[?12l[?25h[?25l[52;161H5[36;89H[?12l[?25h[?25l[52;161H6[36;90H[?12l[?25h[?25l[52;161H7[36;91H[?12l[?25h[?25l[52;161H8[36;92H[?12l[?25h[?25l=[46m[[1C][m[52;161H9[36;93H[?12l[?25h[?25l[52;160H90[36;94H[?12l[?25h[?25l[52;161H1[36;95H[?12l[?25h[?25l][46m)[m[36;96H[K[36;94H[46m][m)[52;161H0[36;94H[?12l[?25h[?25l[31m[46m4[m])[31m4[m[46m][m[52;161H1[36;95H[?12l[?25h[?25l[35;93H[46m[[1C][m[36;93H[[1C][52;157H29[35;95H[?12l[?25h[?25l][46m)[m[35;96H[K[35;94H[46m][m)[52;161H0[35;94H[?12l[?25h[?25l[31m[46m3[m])[31m3[m[46m][m[52;161H1[35;95H[?12l[?25h[?25l[52;161H0[35;94H[?12l[?25h[?25l[52;160H89[35;93H[?12l[?25h[?25l[[1C][52;161H8[35;92H[?12l[?25h[?25l[52;161H7[35;91H[?12l[?25h[?25l[52;161H6[35;90H[?12l[?25h[?25l[52;161H5[35;89H[?12l[?25h[?25l[52;161H4[35;88H[?12l[?25h[?25l[52;161H3[35;87H[?12l[?25h[?25l[46m[[1C][m[52;161H2[35;86H[?12l[?25h[?25l[52;161H1[35;85H[?12l[?25h[?25l[31m[46m2[m], ends=[[31m3[m])[35;85H[31m2[m[46m][m[52;161H2[35;86H[?12l[?25h[?25l[[2C][52;161H1[35;85H[?12l[?25h[?25l[31m2[m], ends=[[31m3[m])[35;97H[K[35;83H[46m[[1C][m[52;161H0[35;84H[?12l[?25h[?25l[52;160H79[35;83H[?12l[?25h[?25l[[1C][52;161H8[35;82H[?12l[?25h[?25l[52;161H7[35;81H[?12l[?25h[?25l[52;161H6[35;80H[?12l[?25h[?25l[52;161H5[35;79H[?12l[?25h[?25l[52;161H4[35;78H[?12l[?25h[?25l[52;161H3[35;77H[?12l[?25h[?25l[52;161H2[35;76H[?12l[?25h[?25l[52;161H1[35;75H[?12l[?25h[?25l[46m[[1C][m[52;161H0[35;74H[?12l[?25h[?25l[52;160H69[35;73H[?12l[?25h[?25l[52;161H8[35;72H[?12l[?25h[?25l[52;161H7[35;71H[?12l[?25h[?25l[[1C][52;161H6[35;70H[?12l[?25h[?25l[52;161H5[35;69H[?12l[?25h[?25l[52;161H4[35;68H[?12l[?25h[?25l[52;161H3[35;67H[?12l[?25h[?25l[52;161H2[35;66H[?12l[?25h[?25l[52;161H1[35;65H[?12l[?25h[?25l[52;161H0[35;64H[?12l[?25h[?25l[52;160H59[35;63H[?12l[?25h[?25l[52;161H8[35;62H[?12l[?25h[?25l[52;161H7[35;61H[?12l[?25h[?25l[52;161H6[35;60H[?12l[?25h[?25l[52;161H5[35;59H[?12l[?25h[?25l[52;161H4[35;58H[?12l[?25h[?25l[52;161H3[35;57H[?12l[?25h[?25l[52;161H2[35;56H[?12l[?25h[?25l[52;161H1[35;55H[?12l[?25h[?25l[52;161H0[35;54H[?12l[?25h[?25l[46m([43C)[m[52;160H49[35;53H[?12l[?25h[?25l[52;161H8[35;52H[?12l[?25h[?25l([43C)[52;161H7[35;51H[?12l[?25h[?25l[52;161H6[35;50H[?12l[?25h[?25l[52;161H5[35;49H[?12l[?25h[?25l[52;161H4[35;48H[?12l[?25h[?25l[52;161H3[35;47H[?12l[?25h[?25l[52;161H2[35;46H[?12l[?25h[?25l[52;161H1[35;45H[?12l[?25h[?25l[52;161H0[35;44H[?12l[?25h[?25l[52;160H39[35;43H[?12l[?25h[?25l[52;161H8[35;42H[?12l[?25h[?25l[52;161H7[35;41H[?12l[?25h[?25l[52;161H6[35;40H[?12l[?25h[?25l[52;161H5[35;39H[?12l[?25h[?25l[52;161H4[35;38H[?12l[?25h[?25l[52;161H3[35;37H[?12l[?25h[?25l[52;161H2[35;36H[?12l[?25h[?25l[52;161H1[35;35H[?12l[?25h[?25l[52;161H0[35;34H[?12l[?25h[?25l[52;160H29[35;33H[?12l[?25h[?25l[52;161H8[35;32H[?12l[?25h[?25l[52;161H7[35;31H[?12l[?25h[?25l[52;161H6[35;30H[?12l[?25h[?25l[52;161H7[35;31H[?12l[?25h[?25l = fluid.layers.slice(decoded_box, axes=[[31m2[m], starts=[[31m2[m], ends=[[31m3[m])[35;96H[K[52;161H6[35;30H[?12l[?25h[?25la = fluid.layers.slice(decoded_box, axes=[[31m2[m], starts=[[31m2[m], ends=[[31m3[m])[52;161H7[35;31H[?12l[?25h[?25l[52;161H8[35;32H[?12l[?25h[?25l[52;161H9[35;33H[?12l[?25h[?25l[52;160H30[35;34H[?12l[?25h[?25l[52;161H1[35;35H[?12l[?25h[?25l[52;161H2[35;36H[?12l[?25h[?25l[52;161H3[35;37H[?12l[?25h[?25l[52;161H4[35;38H[?12l[?25h[?25l[52;161H5[35;39H[?12l[?25h[?25l[52;161H6[35;40H[?12l[?25h[?25l[52;161H7[35;41H[?12l[?25h[?25l[52;161H8[35;42H[?12l[?25h[?25l[52;161H9[35;43H[?12l[?25h[?25l[52;160H40[35;44H[?12l[?25h[?25l[52;161H1[35;45H[?12l[?25h[?25l[52;161H2[35;46H[?12l[?25h[?25l[52;161H3[35;47H[?12l[?25h[?25l[52;161H4[35;48H[?12l[?25h[?25l[52;161H5[35;49H[?12l[?25h[?25l[52;161H6[35;50H[?12l[?25h[?25l[52;161H7[35;51H[?12l[?25h[?25le[46m([43C)[m[52;161H8[35;52H[?12l[?25h[?25l[52;161H9[35;53H[?12l[?25h[?25l([43C)[52;160H50[35;54H[?12l[?25h[?25l[52;161H1[35;55H[?12l[?25h[?25l[52;161H2[35;56H[?12l[?25h[?25l[52;161H3[35;57H[?12l[?25h[?25l[52;161H4[35;58H[?12l[?25h[?25l[52;161H5[35;59H[?12l[?25h[?25l[52;161H6[35;60H[?12l[?25h[?25l[52;161H7[35;61H[?12l[?25h[?25l[52;161H8[35;62H[?12l[?25h[?25l[52;161H9[35;63H[?12l[?25h[?25l[52;160H60[35;64H[?12l[?25h[?25l[52;161H1[35;65H[?12l[?25h[?25l[52;161H2[35;66H[?12l[?25h[?25l[52;161H3[35;67H[?12l[?25h[?25l[52;161H4[35;68H[?12l[?25h[?25l[52;161H5[35;69H[?12l[?25h[?25l[52;161H6[35;70H[?12l[?25h[?25l=[46m[[1C][m[52;161H7[35;71H[?12l[?25h[?25l[52;161H8[35;72H[?12l[?25h[?25l[52;161H9[35;73H[?12l[?25h[?25l[52;160H70[35;74H[?12l[?25h[?25l[[1C][52;161H1[35;75H[?12l[?25h[?25l[52;161H2[35;76H[?12l[?25h[?25l[52;161H3[35;77H[?12l[?25h[?25l[52;161H4[35;78H[?12l[?25h[?25l[52;161H5[35;79H[?12l[?25h[?25l[52;161H6[35;80H[?12l[?25h[?25l[52;161H7[35;81H[?12l[?25h[?25l[52;161H8[35;82H[?12l[?25h[?25l=[46m[[1C][m[52;161H9[35;83H[?12l[?25h[?25l[52;160H80[35;84H[?12l[?25h[?25l[52;161H1[35;85H[?12l[?25h[?25l[52;161H2[35;86H[?12l[?25h[?25l[[1C][52;161H3[35;87H[?12l[?25h[?25l[52;161H4[35;88H[?12l[?25h[?25l[52;161H5[35;89H[?12l[?25h[?25l[52;157H30[36;89H[?12l[?25h[?25l[52;161H6[36;90H[?12l[?25h[?25l[52;161H7[36;91H[?12l[?25h[?25l[52;161H8[36;92H[?12l[?25h[?25l=[46m[[1C][m[52;161H9[36;93H[?12l[?25h[?25l[52;160H90[36;94H[?12l[?25h[?25l[52;161H1[36;95H[?12l[?25h[?25l[36;52H[46m([m[40C[[1C][46m)[m[52;161H2[36;96H[?12l[?25h[?25l[52;161H3[36;97H[?12l[?25h[?25l[37;17H[K[38;43Hreshape(x=cliped_box, shape=(-[31m1[m,[31m1[m,[31m4[m))[38;81H[K[39;17Hexpand_box = fluid.layers.expand(x=expand_box, expand_times=[[31m1[m, cfg.class_num-[31m1[m, [31m1[m])[40;17H[K[41;17Hcls_score_reshape = fluid.layers.transpose([42;17H    self.cls_score[i], perm=[[31m0[m, [31m2[m, [31m3[m, [31m1[m])[43;17Hcls_score_reshape = fluid.layers.reshape([43;58H[K[44;21Hx=cls_score_reshape, shape=(-[31m1[m, cfg.class_num - [31m1[m))[45;17H[K[46;17Hboxes.append(expand_box)[46;41H[K[47;17Hscores.append(cls_score_reshape)[49;13H[K[50;13Hboxes_list = fluid.layers.concat(boxes, axis=[31m0[m)[50;60H[K[51;13Hscores_list = fluid.layers.concat(scores, axis=[31m0[m)[51;62H[K[36;52H([43C)[52;158H1,1[37;17H[?12l[?25h[?25l[52;158H0[36;17H[?12l[?25h[?25l[34m#decoded_box_ya = fluid.layers.slice(decoded_box, axes=[2], starts=[3], ends=[4])[m[52;161H4[36;18H[?12l[?25h[?25l[52;157H29[35;18H[?12l[?25h[?25l[52;161H3[35;17H[?12l[?25h[?25l[34m#decoded_box_xa = fluid.layers.slice(decoded_box, axes=[2], starts=[2], ends=[3])[m[52;161H4[35;18H[?12l[?25h[?25l[52;158H8[34;18H[?12l[?25h[?25l[52;158H7[33;18H[?12l[?25h[?25l[52;161H3[33;17H[?12l[?25h[?25l[34m#decoded_box_xi = fluid.layers.slice(decoded_box, axes=[2], starts=[0], ends=[1])[m[52;161H4[33;18H[?12l[?25h[?25l[52;158H8[34;18H[?12l[?25h[?25l[52;161H3[34;17H[?12l[?25h[?25l[34m#decoded_box_yi = fluid.layers.slice(decoded_box, axes=[2], starts=[1], ends=[2])[m[52;161H4[34;18H[?12l[?25h[?25l[52;158H9[35;18H[?12l[?25h[?25l[52;157H30[36;18H[?12l[?25h[?25l[52;158H1,1 [37;5H[?12l[?25h[?25l[52;158H2,14[38;18H[?12l[?25h[?25l[52;158H3[39;18H[?12l[?25h[?25l[52;158H2[38;18H[?12l[?25h[?25l[52;161H3[38;17H[?12l[?25h[?25l[52;158H1,1 [37;5H[?12l[?25h[?25l[52;160H5[37;9H[?12l[?25h[?25l[52;160H9[37;13H[?12l[?25h[?25l[52;160H13[37;17H[?12l[?25h[?25lcliped_box[52;160H2[37;27H[?12l[?25h[?25l[52;161H4[37;28H[?12l[?25h[?25l=[52;161H5[37;29H[?12l[?25h[?25l[52;161H6[37;30H[?12l[?25h[?25ldecoded_box[52;160H37[37;41H[?12l[?25h[52;1H[K[37;40H[?25l[52;156H131,36[8C27%[37;40H[?12l[?25h[?25l[52;158H0[36;40H[?12l[?25h[?25l[52;157H29[35;40H[?12l[?25h[?25l[52;157H30[36;40H[?12l[?25h[?25l[52;158H1[37;40H[?12l[?25h[?25l[52;158H2[38;40H[?12l[?25h[?25l[52;158H3[39;40H[?12l[?25h[?25l[52;158H4,0-1[40;5H[?12l[?25h[?25l[52;158H5,36 [41;40H[?12l[?25h[?25l[52;158H6[42;40H[?12l[?25h[?25l[52;158H7[43;40H[?12l[?25h[?25l[52;158H8[44;40H[?12l[?25h[?25l[52;158H9,0-1[45;5H[?12l[?25h[?25l[46;29H[46m([10C)[m[52;157H40,36 [46;40H[?12l[?25h[?25l[46;29H([10C)[52;158H1[47;40H[?12l[?25h[?25l[52;158H2,0-1[48;5H[?12l[?25h[?25l[52;158H3[49;5H[?12l[?25h[?25l[52;158H4,36 [50;40H[?12l[?25h[?25l[52;158H5[51;40H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m146 [m[8Cfluid.layers.Print(boxes_list, summarize=[31m10[m, message=[31m"The content of boxes_list: "[m)[52;156H[K[52;156H146,36[8C27%[51;40H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m147 [m[8Cfluid.layers.Print(scores_list, summarize=[31m10[m, message=[31m"The content of scores_list: "[m)[52;156H[K[52;156H147,36[8C28%[51;40H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m148 [m[8Cself.pred_result = fluid.layers.multiclass_nms([52;156H[K[52;156H148,36[8C28%[51;40H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m149 [m[12Cbboxes=boxes_list,[52;156H[K[52;156H149,30[8C28%[51;34H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m150 [m[12Cscores=scores_list,[52;156H[K[52;156H150,31[8C29%[51;35H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m151 [m[12Cscore_threshold=cfg.TEST.score_thresh,[52;156H[K[52;156H151,36[8C29%[51;40H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m152 [m[12Cbackground_label=-[31m1[m,[52;156H[K[52;156H152,32[8C29%[51;36H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m153 [m[12Cnms_top_k=cfg.TEST.nms_top_k,[52;156H[K[52;156H153,36[8C29%[51;40H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m154 [m[12Cnms_threshold=cfg.TEST.nms_thresh,[52;156H[K[52;156H154,36[8C30%[51;40H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m155 [m[12Ckeep_top_k=cfg.TEST.detections_per_im,[52;156H[K[52;156H155,36[8C30%[51;40H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[43;59H[46m([m[51;1H[33m156 [m[12Cnormalized=[36mFalse[m[46m)[m[52;156H[K[52;156H156,29[8C30%[51;33H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[42;59H([50;33H)
+[33m157 [m[8Cfluid.layers.Print(self.pred_result, summarize=[31m10[m, message=[31m"The content of pred_result: "[m)[52;156H[K[52;156H157,36[8C31%[51;40H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m158 [m[52;156H[K[52;156H158,0-1[7C31%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m159 [m[52;156H[K[52;156H159,0-1[7C31%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m160 [m    [33mdef[m [36mextract_feat[m(self, img):[52;156H[K[52;156H160,32[8C31%[51;36H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m161 [m[8C[34m# resnet body[m[52;156H[K[52;156H161,21[8C32%[51;25H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m162 [m[8Cself.body_conv = self.add_conv_body_func(self.image)[52;156H[K[52;156H162,36[8C32%[51;40H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m163 [m[8C[34m# fpn neck[m[52;156H[K[52;156H163,18[8C32%[51;22H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m164 [8Cif[m self.add_fpn_neck_func == [36mNone[m:[52;156H[K[52;156H164,36[8C33%[51;40H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m165 [12Creturn[m self.body_conv[52;156H[K[52;156H165,33[8C33%[51;37H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m166 [m[8Cself.neck_conv = self.add_fpn_neck_func(self.body_conv, start_level=cfg.start_level)[52;156H[K[52;156H166,36[8C33%[51;40H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m167 [8Creturn[m self.neck_conv[52;156H[K[52;156H167,29[8C34%[51;33H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m168 [m[52;156H[K[52;156H168,0-1[7C34%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m169 [m    [33mdef[m [36mcls_subnet[m(self, subnet_input, num_conv=[31m4[m, name=[36mNone[m):[52;156H[K[52;156H169,36[8C34%[51;40H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m170 [m[8Csubnet_blob = subnet_input[52;156H[K[52;156H170,34[8C34%[51;38H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m171 [8Cfor[m i [33min[m [36mrange[m(num_conv):[52;156H[K[52;156H171,33[8C35%[51;37H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m172 [m[12Csubnet_blob_in = subnet_blob[52;156H[K[52;156H172,36[8C35%[51;40H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m173 [m[12Csubnet_blob = fluid.layers.conv2d([52;156H[K[52;156H173,36[8C35%[51;40H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m174 [m[16C[36minput[m=subnet_blob_in,[52;156H[K[52;156H174,36[8C36%[51;40H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m175 [m[16Cnum_filters=[31m256[m,[52;156H[K[52;156H175,32[8C36%[51;36H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m176 [m[16Cfilter_size=[31m3[m,[52;156H[K[52;156H176,30[8C36%[51;34H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m177 [m[16Cstride=[31m1[m,[52;156H[K[52;156H177,25[8C36%[51;29H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m178 [m[16Cpadding=[31m1[m,[52;156H[K[52;156H178,26[8C37%[51;30H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m179 [m[16Cact=[31m'relu'[m,[52;156H[K[52;156H179,27[8C37%[51;31H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m180 [m[16Cname=name + [31m"_sub{}_cls"[m.format(i),[52;156H[K[52;156H180,36[8C37%[51;40H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m181 [m[16Cparam_attr=ParamAttr(name=[31m"sub{}_cls_w"[m.format(i),[52;156H[K[52;156H181,36[8C38%[51;40H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m182 [m[37Cinitializer=Normal(loc=[31m0.[m, scale=[31m0.01[m)),[52;156H[K[52;156H182,36[8C38%[51;40H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m183 [m[16Cbias_attr=ParamAttr(name=[31m"sub{}_cls_b"[m.format(i),[52;156H[K[52;156H183,36[8C38%[51;40H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m184 [m[36Clearning_rate=[31m2.[m,[52;156H[K[52;156H184,36[8C39%[51;40H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m185 [m[36Cregularizer=L2Decay([31m0.[m)))[52;156H[K[52;156H185,36[8C39%[51;40H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m186 [m[52;156H[K[52;156H186,0-1[7C39%[51;5H[?12l[?25h[?25l[52;156H[K[52;1H:[?12l[?25hwq[?25l"models/model_builder.py" 392L, 16192C written
+[?1l>[?12l[?25h[?1049l# python eval_coco_map.py --pretrained_model=output/model_final/ --data_dir=dataset/coco/COCO17
+-----------  Configuration Arguments -----------
+batch_size_per_im: 512
+class_num: 81
+data_dir: dataset/coco/COCO17
+dataset: coco2017
+draw_threshold: 0.8
+enable_ce: False
+im_per_batch: 1
+image_path: dataset/coco/val2017
+learning_rate: 0.01
+log_window: 20
+max_iter: 180000
+max_size: 1333
+model_save_dir: output
+nms_thresh: 0.5
+num_gpus: 1
+padding_minibatch: False
+parallel: True
+pixel_means: [102.9801, 115.9465, 122.7717]
+pretrained_model: output/model_final/
+scales: [800]
+score_thresh: 0.05
+snapshot_stride: 10000
+use_gpu: True
+use_profile: False
+use_pyreader: True
+------------------------------------------------
+loading annotations into memory...
+Done (t=0.91s)
+creating index...
+index created!
+end_level: 3
+used_body_levels: 3
+W0513 06:13:47.108043 98992 device_context.cc:261] Please NOTE: device: 0, CUDA Capability: 70, Driver API Version: 10.1, Runtime API Version: 9.0
+W0513 06:13:47.114990 98992 device_context.cc:269] device: 0, cuDNN Version: 7.0.
+Creating: coco2017
+file_list: dataset/coco/COCO17/annotations/instances_val2017.json
+loading annotations into memory...
+Done (t=0.96s)
+creating index...
+index created!
+Loaded dataset: coco2017
+5000 roidb entries
+val on coco2017 with 5000 roidbs
+begin run
+1557728030	The content of decoded_box: 	Tensor[tmp_0]
+	shape: [1,135900,4,]
+	dtype: f
+	data: -10.8628,-4.95698,12.9546,7.55361,-14.0339,-7.49451,15.1843,8.90162,-16.3459,-10.1038,
+1557728030	The content of im_info: 	Tensor[im_info]
+	shape: [1,3,]
+	dtype: f
+	data: 800,1202,1.87793,
+1557728030	The content of decoded_box: 	Tensor[tmp_1]
+	shape: [1,34200,4,]
+	dtype: f
+	data: -20.4772,-9.23582,26.986,16.4317,-28.7945,-14.6204,32.7169,18.9275,-34.1495,-20.7011,
+1557728030	The content of im_info: 	Tensor[im_info]
+	shape: [1,3,]
+	dtype: f
+	data: 800,1202,1.87793,
+1557728030	The content of decoded_box: 	Tensor[tmp_2]
+	shape: [1,8550,4,]
+	dtype: f
+	data: -43.2567,-19.6278,55.6909,33.8922,-56.0058,-27.369,70.6413,40.0493,-63.3831,-35.8157,
+1557728030	The content of im_info: 	Tensor[im_info]
+	shape: [1,3,]
+	dtype: f
+	data: 800,1202,1.87793,
+1557728030	The content of decoded_box: 	Tensor[tmp_3]
+	shape: [1,8550,4,]
+	dtype: f
+	data: -87.664,-39.2556,112.974,68.3169,-113.445,-54.7379,143.207,80.6312,-128.364,-71.6314,
+1557728030	The content of im_info: 	Tensor[im_info]
+	shape: [1,3,]
+	dtype: f
+	data: 800,1202,1.87793,
+1557728030	The content of decoded_box: 	Tensor[tmp_4]
+	shape: [1,8550,4,]
+	dtype: f
+	data: -174.177,-77.2875,225.421,136.04,-225.457,-107.915,285.555,160.401,-255.13,-141.335,
+1557728030	The content of im_info: 	Tensor[im_info]
+	shape: [1,3,]
+	dtype: f
+	data: 800,1202,1.87793,
+1557728031	The content of boxes_list: 	Tensor[concat_0.tmp_0]
+	shape: [195750,80,4,]
+	dtype: f
+	data: -10.8628,-4.95698,12.9546,7.55361,-10.8628,-4.95698,12.9546,7.55361,-10.8628,-4.95698,
+1557728031	The content of scores_list: 	Tensor[concat_1.tmp_0]
+	shape: [195750,80,]
+	dtype: f
+	data: -5.34612,-5.50057,-5.38596,-5.93569,-5.52895,-5.78056,-5.55735,-5.56936,-5.32169,-5.55955,
+*** Aborted at 1557728031 (unix time) try "date -d @1557728031" if you are using GNU date ***
+PC: @                0x0 (unknown)
+*** SIGSEGV (@0xfffffffffffffff0) received by PID 98992 (TID 0x7fcf0030a700) from PID 18446744073709551600; stack trace: ***
+    @     0x7fceffeef390 (unknown)
+    @     0x7fce2c114a18 paddle::operators::MultiClassNMSKernel<>::Compute()
+    @     0x7fce2c11657f _ZNSt17_Function_handlerIFvRKN6paddle9framework16ExecutionContextEEZNKS1_24OpKernelRegistrarFunctorINS0_8platform8CPUPlaceELb0ELm0EINS0_9operators19MultiClassNMSKernelIfEENSA_IdEEEEclEPKcSF_iEUlS4_E_E9_M_invokeERKSt9_Any_dataS4_
+    @     0x7fce2c697651 paddle::framework::OperatorWithKernel::RunImpl()
+    @     0x7fce2c6986a3 paddle::framework::OperatorWithKernel::RunImpl()
+    @     0x7fce2c691dde paddle::framework::OperatorBase::Run()
+    @     0x7fce2aae025e paddle::framework::Executor::RunPreparedContext()
+    @     0x7fce2aae331d paddle::framework::Executor::Run()
+    @     0x7fce2a901226 _ZZN8pybind1112cpp_function10initializeIZN6paddle6pybindL18pybind11_init_coreERNS_6moduleEEUlRNS2_9framework8ExecutorERKNS6_11ProgramDescEPNS6_5ScopeEibbRKSt6vectorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaISK_EEE97_vJS8_SB_SD_ibbSO_EJNS_4nameENS_9is_methodENS_7siblingEEEEvOT_PFT0_DpT1_EDpRKT2_ENUlRNS_6detail13function_callEE1_4_FUNES16_
+    @     0x7fce2a94f2d4 pybind11::cpp_function::dispatcher()
+    @           0x4c5326 PyEval_EvalFrameEx
+    @           0x4b9b66 PyEval_EvalCodeEx
+    @           0x4c1f56 PyEval_EvalFrameEx
+    @           0x4b9b66 PyEval_EvalCodeEx
+    @           0x4c17c6 PyEval_EvalFrameEx
+    @           0x4b9b66 PyEval_EvalCodeEx
+    @           0x4c1f56 PyEval_EvalFrameEx
+    @           0x4b9b66 PyEval_EvalCodeEx
+    @           0x4eb69f (unknown)
+    @           0x4e58f2 PyRun_FileExFlags
+    @           0x4e41a6 PyRun_SimpleFileExFlags
+    @           0x4938ce Py_Main
+    @     0x7fceffb34830 __libc_start_main
+    @           0x493299 _start
+    @                0x0 (unknown)
+Segmentation fault
+# vim models/model_builder.py
+[?1049h[?1h=[2;1H½[6n[2;1H  [1;1H]11;?[1;52r[?12;25h[?12l[?25h[27m[23m[m[H[2J[?25l[52;1H"models/model_builder.py" 392L, 16192C[>c[1;1H[33m  1 [m[34m#  Copyright (c) 2018 PaddlePaddle Authors. All Rights Reserve.[m
+[33m  2 [m[34m#[m
+[33m  3 [m[34m#Licensed under the Apache License, Version 2.0 (the "License");[m
+[33m  4 [m[34m#you may not use this file except in compliance with the License.[m
+[33m  5 [m[34m#You may obtain a copy of the License at[m
+[33m  6 [m[34m#[m
+[33m  7 [m[34m#    http://www.apache.org/licenses/LICENSE-2.0[m
+[33m  8 [m[34m#[m
+[33m  9 [m[34m#Unless required by applicable law or agreed to in writing, software[m
+[33m 10 [m[34m#distributed under the License is distributed on an "AS IS" BASIS,[m
+[33m 11 [m[34m#WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.[m
+[33m 12 [m[34m#See the License for the specific language governing permissions and[m
+[33m 13 [m[34m#limitations under the License.[m
+[33m 14 [m[35mimport[m numpy [33mas[m np
+[33m 15 [m[35mimport[m paddle.fluid [33mas[m fluid
+[33m 16 [m[35mfrom[m paddle.fluid.param_attr [35mimport[m ParamAttr
+[33m 17 [m[35mfrom[m paddle.fluid.initializer [35mimport[m Constant
+[33m 18 [m[35mfrom[m paddle.fluid.initializer [35mimport[m Normal
+[33m 19 [m[35mfrom[m paddle.fluid.initializer [35mimport[m MSRA
+[33m 20 [m[35mfrom[m paddle.fluid.regularizer [35mimport[m L2Decay
+[33m 21 [m[35mfrom[m config [35mimport[m cfg
+[33m 22 
+ 23 
+ 24 class[m [36mRetinaNet[m([36mobject[m):
+[33m 25 [m    [33mdef[m [36m__init__[m(self,
+[33m 26 [m[17Cadd_conv_body_func=[36mNone[m,
+[33m 27 [m[17Cadd_fpn_neck_func=[36mNone[m,
+[33m 28 [m[17Canchor_strides=[[31m8[m, [31m16[m, [31m32[m, [31m64[m, [31m128[m],
+[33m 29 [m[17Cmode=[31m'train'[m,
+[33m 30 [m[17Cuse_pyreader=[36mTrue[m,
+[33m 31 [m[17Cuse_random=[36mTrue[m):
+[33m 32 [m[8Cself.add_conv_body_func = add_conv_body_func
+[33m 33 [m[8Cself.add_fpn_neck_func = add_fpn_neck_func
+[33m 34 [m[8Cself.mode = mode
+[33m 35 [m[8Cself.use_pyreader = use_pyreader
+[33m 36 [m[8Cself.use_random = use_random
+[33m 37 [m[8Cself.anchor_strides = anchor_strides
+[33m 38 
+ 39 [m    [33mdef[m [36mbuild_model[m(self, image_shape):
+[33m 40 [m[8Cself.build_input(image_shape)
+[33m 41 [m[8C[34m# backbone[m
+[33m 42 [m[8Cfeat_layers = self.extract_feat(self.image)
+[33m 43 [m[8C[34m# bbox head[m
+[33m 44 [m[8Cself.retina_heads(feat_layers)
+[33m 45 
+ 46 [8Cif[m self.mode != [31m'train'[m:
+[33m 47 [m[12Cself.eval_bbox()
+[33m 48 
+ 49 
+ 50 [m    [33mdef[m [36meval_bbox_out[m(self):
+[33m 51 [8Creturn[m self.pred_result[52;156H1,1[11CTop[1;5H[?12l[?25h[?25l[52;156H2[2;5H[?12l[?25h[?25l[52;156H3[3;5H[?12l[?25h[?25l[52;156H4[4;5H[?12l[?25h[?25l[52;156H5[5;5H[?12l[?25h[?25l[52;156H6[6;5H[?12l[?25h[?25l[52;156H7[7;5H[?12l[?25h[?25l[52;156H8[8;5H[?12l[?25h[?25l[52;156H9[9;5H[?12l[?25h[?25l[52;156H10,1[10;5H[?12l[?25h[?25l[52;157H1[11;5H[?12l[?25h[?25l[52;157H2[12;5H[?12l[?25h[?25l[52;157H3[13;5H[?12l[?25h[?25l[52;157H4[14;5H[?12l[?25h[?25l[52;157H5[15;5H[?12l[?25h[?25l[52;157H6[16;5H[?12l[?25h[?25l[52;157H7[17;5H[?12l[?25h[?25l[52;157H8[18;5H[?12l[?25h[?25l[52;157H9[19;5H[?12l[?25h[?25l[52;156H20[20;5H[?12l[?25h[?25l[52;157H1[21;5H[?12l[?25h[?25l[52;157H2,0-1[22;5H[?12l[?25h[?25l[52;157H3[23;5H[?12l[?25h[?25l[52;157H4,1  [24;5H[?12l[?25h[?25l[52;157H5[25;5H[?12l[?25h[?25l[52;157H6[26;5H[?12l[?25h[?25l[52;157H7[27;5H[?12l[?25h[?25l[52;157H8[28;5H[?12l[?25h[?25l[52;157H9[29;5H[?12l[?25h[?25l[52;156H30[30;5H[?12l[?25h[?25l[52;157H1[31;5H[?12l[?25h[?25l[52;157H2[32;5H[?12l[?25h[?25l[52;157H3[33;5H[?12l[?25h[?25l[52;157H4[34;5H[?12l[?25h[?25l[52;157H5[35;5H[?12l[?25h[?25l[52;157H6[36;5H[?12l[?25h[?25l[52;157H7[37;5H[?12l[?25h[?25l[52;157H8,0-1[38;5H[?12l[?25h[?25l[52;157H9,1  [39;5H[?12l[?25h[?25l[52;156H40[40;5H[?12l[?25h[?25l[52;157H1[41;5H[?12l[?25h[?25l[52;157H2[42;5H[?12l[?25h[?25l[52;157H3[43;5H[?12l[?25h[?25l[52;157H4[44;5H[?12l[?25h[?25l[52;157H5,0-1[45;5H[?12l[?25h[?25l[52;157H6,1  [46;5H[?12l[?25h[?25l[52;157H7[47;5H[?12l[?25h[?25l[52;157H8[48;5H[?12l[?25h[?25l[52;157H9,0-1[49;5H[?12l[?25h[?25l[52;156H50,1  [50;5H[?12l[?25h[?25l[52;157H1[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 52 [m[52;1H[K[52;156H52,0-1[9C0%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 53 [m    [33mdef[m [36mbuild_input[m(self, image_shape):[52;156H[K[52;156H53,1[11C0%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 54 [8Cif[m self.use_pyreader:[52;156H[K[52;156H54,1[11C0%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 55 [m[12Cin_shapes = [[-[31m1[m] + image_shape, [-[31m1[m, [31m4[m], [-[31m1[m, [31m1[m], [-[31m1[m, [31m1[m],[52;156H[K[52;156H55,1[11C1%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 56 [m[25C[-[31m1[m, [31m3[m], [-[31m1[m, [31m1[m]][52;156H[K[52;156H56,1[11C1%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 57 [m[12Clod_levels = [[31m0[m, [31m1[m, [31m1[m, [31m1[m, [31m0[m, [31m0[m][52;156H[K[52;156H57,1[11C1%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 58 [m[12Cdtypes = [[52;156H[K[52;156H58,1[11C2%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 59 [m[16C[31m'float32'[m, [31m'float32'[m, [31m'int32'[m, [31m'int32'[m, [31m'float32'[m, [31m'int32'[m[52;156H[K[52;156H59,1[11C2%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 60 [m[12C][52;156H[K[52;156H60,1[11C2%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 61 [m[12Cself.py_reader = fluid.layers.py_reader([52;156H[K[52;156H61,1[11C2%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 62 [m[16Ccapacity=[31m64[m,[52;156H[K[52;156H62,1[11C3%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 63 [m[16Cshapes=in_shapes,[52;156H[K[52;156H63,1[11C3%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 64 [m[16Clod_levels=lod_levels,[52;156H[K[52;156H64,1[11C3%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 65 [m[16Cdtypes=dtypes,[52;156H[K[52;156H65,1[11C4%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 66 [m[16Cuse_double_buffer=[36mTrue[m)[52;156H[K[52;156H66,1[11C4%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 67 [m[12Cins = fluid.layers.read_file(self.py_reader)[52;156H[K[52;156H67,1[11C4%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 68 [m[12Cself.image = ins[[31m0[m][52;156H[K[52;156H68,1[11C4%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 69 [m[12Cself.gt_box = ins[[31m1[m][52;156H[K[52;156H69,1[11C5%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 70 [m[12Cself.gt_label = ins[[31m2[m][52;156H[K[52;156H70,1[11C5%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 71 [m[12Cself.is_crowd = ins[[31m3[m][52;156H[K[52;156H71,1[11C5%[51;5H[?12l[?25h[?25l[52;157H0[50;5H[?12l[?25h[?25l[52;156H69[49;5H[?12l[?25h[?25l[52;157H8[48;5H[?12l[?25h[?25l[52;157H7[47;5H[?12l[?25h[?25l[52;157H6[46;5H[?12l[?25h[?25l[52;157H5[45;5H[?12l[?25h[?25l[52;157H4[44;5H[?12l[?25h[?25l[52;157H3[43;5H[?12l[?25h[?25l[52;157H2[42;5H[?12l[?25h[?25l[52;157H1[41;5H[?12l[?25h[?25l[52;157H0[40;5H[?12l[?25h[?25l[52;156H59[39;5H[?12l[?25h[?25l[52;157H8[38;5H[?12l[?25h[?25l[52;157H7[37;5H[?12l[?25h[?25l[52;157H6[36;5H[?12l[?25h[?25l[52;157H5[35;5H[?12l[?25h[?25l[52;157H4[34;5H[?12l[?25h[?25l[52;157H3[33;5H[?12l[?25h[?25l[52;157H2,0-1[32;5H[?12l[?25h[?25l[52;157H1,1  [31;5H[?12l[?25h[?25l[52;157H0[30;5H[?12l[?25h[?25l[52;156H49,0-1[29;5H[?12l[?25h[?25l[52;157H8,1  [28;5H[?12l[?25h[?25l[52;157H7[27;5H[?12l[?25h[?25l[52;157H8[28;5H[?12l[?25h[?25l[52;157H9,0-1[29;5H[?12l[?25h[?25l[52;156H50,1  [30;5H[?12l[?25h[?25l[52;157H1[31;5H[?12l[?25h[?25l[52;157H2,0-1[32;5H[?12l[?25h[?25l[52;157H3,1  [33;5H[?12l[?25h[?25l[52;157H4[34;5H[?12l[?25h[?25l[52;157H5[35;5H[?12l[?25h[?25l[52;157H6[36;5H[?12l[?25h[?25l[52;157H7[37;5H[?12l[?25h[?25l[52;157H8[38;5H[?12l[?25h[?25l[52;157H9[39;5H[?12l[?25h[?25l[52;156H60[40;5H[?12l[?25h[?25l[52;157H1[41;5H[?12l[?25h[?25l[52;157H2[42;5H[?12l[?25h[?25l[52;157H3[43;5H[?12l[?25h[?25l[52;157H4[44;5H[?12l[?25h[?25l[52;157H5[45;5H[?12l[?25h[?25l[52;157H6[46;5H[?12l[?25h[?25l[52;157H7[47;5H[?12l[?25h[?25l[52;157H8[48;5H[?12l[?25h[?25l[52;157H9[49;5H[?12l[?25h[?25l[52;156H70[50;5H[?12l[?25h[?25l[52;157H1[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 72 [m[12Cself.im_info = ins[[31m4[m][52;156H[K[52;156H72,1[11C6%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 73 [m[12Cself.im_id = ins[[31m5[m][52;156H[K[52;156H73,1[11C6%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 74 [8Celse[m:[52;156H[K[52;156H74,1[11C6%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 75 [m[12Cself.image = fluid.layers.data([52;156H[K[52;156H75,1[11C7%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 76 [m[16Cname=[31m'image'[m, shape=image_shape, dtype=[31m'float32'[m)[52;156H[K[52;156H76,1[11C7%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 77 [m[12Cself.gt_box = fluid.layers.data([52;156H[K[52;156H77,1[11C7%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 78 [m[16Cname=[31m'gt_box'[m, shape=[[31m4[m], dtype=[31m'float32'[m, lod_level=[31m1[m)[52;156H[K[52;156H78,1[11C7%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 79 [m[12Cself.gt_label = fluid.layers.data([52;156H[K[52;156H79,1[11C8%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 80 [m[16Cname=[31m'gt_label'[m, shape=[[31m1[m], dtype=[31m'int32'[m, lod_level=[31m1[m)[52;156H[K[52;156H80,1[11C8%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 81 [m[12Cself.is_crowd = fluid.layers.data([52;156H[K[52;156H81,1[11C8%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 82 [m[16Cname=[31m'is_crowd'[m, shape=[[31m1[m], dtype=[31m'int32'[m, lod_level=[31m1[m)[52;156H[K[52;156H82,1[11C9%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 83 [m[12Cself.im_info = fluid.layers.data([52;156H[K[52;156H83,1[11C9%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 84 [m[16Cname=[31m'im_info'[m, shape=[[31m3[m], dtype=[31m'float32'[m)[52;156H[K[52;156H84,1[11C9%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 85 [m[12Cself.im_id = fluid.layers.data([52;156H[K[52;156H85,1[11C9%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 86 [m[16Cname=[31m'im_id'[m, shape=[[31m1[m], dtype=[31m'int32'[m)[52;156H[K[52;156H86,1[10C10%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 87 [m[52;156H[K[52;156H87,0-1[8C10%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 88 [m    [33mdef[m [36mfeeds[m(self):[52;156H[K[52;156H88,1[10C10%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 89 [8Cif[m self.mode == [31m'infer'[m:[52;156H[K[52;156H89,1[10C11%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 90 [12Creturn[m [self.image, self.im_info][52;156H[K[52;156H90,1[10C11%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 91 [8Cif[m self.mode == [31m'val'[m:[52;156H[K[52;156H91,1[10C11%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 92 [12Creturn[m [self.image, self.im_info, self.im_id][52;156H[K[52;156H92,1[10C12%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 93 [8Creturn[m [[52;156H[K[52;156H93,1[10C12%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 94 [m[12Cself.image, self.gt_box, self.gt_label, self.is_crowd,[52;156H[K[52;156H94,1[10C12%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 95 [m[12Cself.im_info, self.im_id[52;156H[K[52;156H95,1[10C12%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 96 [m[8C][52;156H[K[52;156H96,1[10C13%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 97 [m[52;156H[K[52;156H97,0-1[8C13%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 98 [m    [33mdef[m [36meval_bbox[m(self):[52;156H[K[52;156H98,1[10C13%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m 99 [m[8Cboxes = [][52;156H[K[52;156H99,1[10C14%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m100 [m[8Cscores = [][52;156H[K[52;156H100,1[9C14%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m101 [m[8Cself.im_scale = fluid.layers.slice([52;156H[K[52;156H101,1[9C14%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m102 [m[12Cself.im_info, [[31m1[m], starts=[[31m2[m], ends=[[31m3[m])[52;156H[K[52;156H102,1[9C14%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m103 [m[52;156H[K[52;156H103,1[9C15%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m104 [8Cfor[m i [33min[m [36mrange[m([36mlen[m(self.cls_score)):[52;156H[K[52;156H104,1[9C15%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m105 [m[12C[34m#fluid.layers.Print(self.cls_score[i], summarize=10, message="The content of cls_score[{}]: ".format(i))[m[52;156H[K[52;156H105,1[9C15%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m106 [m[12Ccls_prob = fluid.layers.sigmoid(self.cls_score[i])[52;156H[K[52;156H106,1[9C16%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m107 [m[12C[34m#fluid.layers.Print(cls_prob, summarize=10, message="The content of cls_prob[{}]: ".format(i))[m[52;156H[K[52;156H107,1[9C16%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m108 [m[12Canchor = fluid.layers.reshape(self.anchors[i], shape=[-[31m1[m,[31m4[m])[52;156H[K[52;156H108,1[9C16%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m109 [m[12Cvar = fluid.layers.reshape(self.vars[i], shape=[-[31m1[m,[31m4[m])[52;156H[K[52;156H109,1[9C17%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m110 [m[12Corig_shape = fluid.layers.shape(self.bbox_pred[i])[52;156H[K[52;156H110,1[9C17%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m111 [m[12Cbbox_pred_reshape = fluid.layers.transpose([52;156H[K[52;156H111,1[9C17%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m112 [m[16Cself.bbox_pred[i], perm=[[31m0[m, [31m2[m, [31m3[m, [31m1[m])[52;156H[K[52;156H112,1[9C17%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m113 [m[12Cbbox_pred_reshape = fluid.layers.reshape(bbox_pred_reshape, shape=[[31m0[m,-[31m1[m,[31m4[m])[52;156H[K[52;156H113,1[9C18%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m114 [m[12Cdecoded_box = fluid.layers.box_coder([52;156H[K[52;156H114,1[9C18%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m115 [m[16Cprior_box=anchor,[52;156H[K[52;156H115,1[9C18%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m116 [m[16Cprior_box_var=var,[52;156H[K[52;156H116,1[9C19%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m117 [m[16Ctarget_box=bbox_pred_reshape,[52;156H[K[52;156H117,1[9C19%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m118 [m[16Ccode_type=[31m'decode_center_size'[m,[52;156H[K[52;156H118,1[9C19%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m119 [m[16Cbox_normalized=[36mFalse[m,[52;156H[K[52;156H119,1[9C19%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m120 [m[16Caxis=[31m0[m)[52;156H[K[52;156H120,1[9C20%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m121 [m[12C[34m#im_scale_lod = fluid.layers.sequence_expand(self.im_scale, decoded_box)[m[52;156H[K[52;156H121,1[9C20%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m122 [m[12Cdecoded_box = decoded_box / self.im_scale[52;156H[K[52;156H122,1[9C20%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m123 [m[12Cfluid.layers.Print(decoded_box, summarize=[31m10[m, message=[31m"The content of decoded_box: "[m)[52;156H[K[52;156H123,1[9C21%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m124 [m[12Cfluid.layers.Print(self.im_info, summarize=[31m10[m, message=[31m"The content of im_info: "[m)[52;156H[K[52;156H124,1[9C21%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m125 [m[12C[34m#print(decoded_box)[m[52;156H[K[52;156H125,1[9C21%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m126 [m[12C[34m#cliped_box = fluid.layers.box_clip(input=decoded_box, im_info=self.im_info)[m[52;156H[K[52;156H126,1[9C21%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m127 [m[12C[34m#decoded_box_xi = fluid.layers.slice(decoded_box, axes=[2], starts=[0], ends=[1])[m[52;156H[K[52;156H127,1[9C22%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m128 [m[12C[34m#decoded_box_yi = fluid.layers.slice(decoded_box, axes=[2], starts=[1], ends=[2])[m[52;156H[K[52;156H128,1[9C22%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m129 [m[12C[34m#decoded_box_xa = fluid.layers.slice(decoded_box, axes=[2], starts=[2], ends=[3])[m[52;156H[K[52;156H129,1[9C22%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m130 [m[12C[34m#decoded_box_ya = fluid.layers.slice(decoded_box, axes=[2], starts=[3], ends=[4])[m[52;156H[K[52;156H130,1[9C23%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m131 [m[12Ccliped_box = decoded_box[52;156H[K[52;156H131,1[9C23%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m132 [m[12Cexpand_box = fluid.layers.reshape(x=cliped_box, shape=(-[31m1[m,[31m1[m,[31m4[m))[52;156H[K[52;156H132,1[9C23%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m133 [m[12Cexpand_box = fluid.layers.expand(x=expand_box, expand_times=[[31m1[m, cfg.class_num-[31m1[m, [31m1[m])[52;156H[K[52;156H133,1[9C24%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m134 [m[52;156H[K[52;156H134,0-1[7C24%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m135 [m[12Ccls_score_reshape = fluid.layers.transpose([52;156H[K[52;156H135,1[9C24%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m136 [m[16Cself.cls_score[i], perm=[[31m0[m, [31m2[m, [31m3[m, [31m1[m])[52;156H[K[52;156H136,1[9C24%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m137 [m[12Ccls_score_reshape = fluid.layers.reshape([52;156H[K[52;156H137,1[9C25%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m138 [m[16Cx=cls_score_reshape, shape=(-[31m1[m, cfg.class_num - [31m1[m))[52;156H[K[52;156H138,1[9C25%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m139 [m[52;156H[K[52;156H139,0-1[7C25%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m140 [m[12Cboxes.append(expand_box)[52;156H[K[52;156H140,1[9C26%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m141 [m[12Cscores.append(cls_score_reshape)[52;156H[K[52;156H141,1[9C26%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m142 [m[52;156H[K[52;156H142,0-1[7C26%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m143 [m[52;156H[K[52;156H143,0-1[7C26%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m144 [m[8Cboxes_list = fluid.layers.concat(boxes, axis=[31m0[m)[52;156H[K[52;156H144,1[9C27%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m145 [m[8Cscores_list = fluid.layers.concat(scores, axis=[31m0[m)[52;156H[K[52;156H145,1[9C27%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m146 [m[8Cfluid.layers.Print(boxes_list, summarize=[31m10[m, message=[31m"The content of boxes_list: "[m)[52;156H[K[52;156H146,1[9C27%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m147 [m[8Cfluid.layers.Print(scores_list, summarize=[31m10[m, message=[31m"The content of scores_list: "[m)[52;156H[K[52;156H147,1[9C28%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m148 [m[8Cself.pred_result = fluid.layers.multiclass_nms([52;156H[K[52;156H148,1[9C28%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m149 [m[12Cbboxes=boxes_list,[52;156H[K[52;156H149,1[9C28%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m150 [m[12Cscores=scores_list,[52;156H[K[52;156H150,1[9C29%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m151 [m[12Cscore_threshold=cfg.TEST.score_thresh,[52;156H[K[52;156H151,1[9C29%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m152 [m[12Cbackground_label=-[31m1[m,[52;156H[K[52;156H152,1[9C29%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m153 [m[12Cnms_top_k=cfg.TEST.nms_top_k,[52;156H[K[52;156H153,1[9C29%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m154 [m[12Cnms_threshold=cfg.TEST.nms_thresh,[52;156H[K[52;156H154,1[9C30%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m155 [m[12Ckeep_top_k=cfg.TEST.detections_per_im,[52;156H[K[52;156H155,1[9C30%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m156 [m[12Cnormalized=[36mFalse[m)[52;156H[K[52;156H156,1[9C30%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m157 [m[8Cfluid.layers.Print(self.pred_result, summarize=[31m10[m, message=[31m"The content of pred_result: "[m)[52;156H[K[52;156H157,1[9C31%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m158 [m[52;156H[K[52;156H158,0-1[7C31%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m159 [m[52;156H[K[52;156H159,0-1[7C31%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m160 [m    [33mdef[m [36mextract_feat[m(self, img):[52;156H[K[52;156H160,1[9C31%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m161 [m[8C[34m# resnet body[m[52;156H[K[52;156H161,1[9C32%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m162 [m[8Cself.body_conv = self.add_conv_body_func(self.image)[52;156H[K[52;156H162,1[9C32%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m163 [m[8C[34m# fpn neck[m[52;156H[K[52;156H163,1[9C32%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m164 [8Cif[m self.add_fpn_neck_func == [36mNone[m:[52;156H[K[52;156H164,1[9C33%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m165 [12Creturn[m self.body_conv[52;156H[K[52;156H165,1[9C33%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m166 [m[8Cself.neck_conv = self.add_fpn_neck_func(self.body_conv, start_level=cfg.start_level)[52;156H[K[52;156H166,1[9C33%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m167 [8Creturn[m self.neck_conv[52;156H[K[52;156H167,1[9C34%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m168 [m[52;156H[K[52;156H168,0-1[7C34%[51;5H[?12l[?25h[?25l[52;158H7,1  [50;5H[?12l[?25h[?25l[52;158H6[49;5H[?12l[?25h[?25l[52;158H5[48;5H[?12l[?25h[?25l[52;158H4[47;5H[?12l[?25h[?25l[52;158H3[46;5H[?12l[?25h[?25l[52;158H2[45;5H[?12l[?25h[?25l[52;158H1[44;5H[?12l[?25h[?25l[52;158H0[43;5H[?12l[?25h[?25l[52;157H59,0-1[42;5H[?12l[?25h[?25l[52;158H8[41;5H[?12l[?25h[?25l[52;158H7,1  [40;5H[?12l[?25h[?25l[52;158H8,0-1[41;5H[?12l[?25h[?25l[52;158H9[42;5H[?12l[?25h[?25l[52;157H60,1  [43;5H[?12l[?25h[?25l[52;158H1[44;5H[?12l[?25h[?25l[52;158H2[45;5H[?12l[?25h[?25l[52;158H3[46;5H[?12l[?25h[?25l[52;158H4[47;5H[?12l[?25h[?25l[52;158H5[48;5H[?12l[?25h[?25l[52;158H6[49;5H[?12l[?25h[?25l[52;158H7[50;5H[?12l[?25h[?25l[52;158H8,0-1[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m169 [m    [33mdef[m [36mcls_subnet[m(self, subnet_input, num_conv=[31m4[m, name=[36mNone[m):[52;156H[K[52;156H169,1[9C34%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m170 [m[8Csubnet_blob = subnet_input[52;156H[K[52;156H170,1[9C34%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m171 [8Cfor[m i [33min[m [36mrange[m(num_conv):[52;156H[K[52;156H171,1[9C35%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m172 [m[12Csubnet_blob_in = subnet_blob[52;156H[K[52;156H172,1[9C35%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m173 [m[12Csubnet_blob = fluid.layers.conv2d([52;156H[K[52;156H173,1[9C35%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m174 [m[16C[36minput[m=subnet_blob_in,[52;156H[K[52;156H174,1[9C36%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m175 [m[16Cnum_filters=[31m256[m,[52;156H[K[52;156H175,1[9C36%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m176 [m[16Cfilter_size=[31m3[m,[52;156H[K[52;156H176,1[9C36%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m177 [m[16Cstride=[31m1[m,[52;156H[K[52;156H177,1[9C36%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m178 [m[16Cpadding=[31m1[m,[52;156H[K[52;156H178,1[9C37%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m179 [m[16Cact=[31m'relu'[m,[52;156H[K[52;156H179,1[9C37%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m180 [m[16Cname=name + [31m"_sub{}_cls"[m.format(i),[52;156H[K[52;156H180,1[9C37%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m181 [m[16Cparam_attr=ParamAttr(name=[31m"sub{}_cls_w"[m.format(i),[52;156H[K[52;156H181,1[9C38%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m182 [m[37Cinitializer=Normal(loc=[31m0.[m, scale=[31m0.01[m)),[52;156H[K[52;156H182,1[9C38%[51;5H[?12l[?25h[?25l[1;51r[51;1H
+[1;52r[51;1H[33m183 [m[16Cbias_attr=ParamAttr(name=[31m"sub{}_cls_b"[m.format(i),[52;156H[K[52;156H183,1[9C38%[51;5H[?12l[?25h[?25l[52;158H2[50;5H[?12l[?25h[?25l[52;158H1[49;5H[?12l[?25h[?25l[52;158H0[48;5H[?12l[?25h[?25l[52;157H79[47;5H[?12l[?25h[?25l[52;158H8[46;5H[?12l[?25h[?25l[52;158H7[45;5H[?12l[?25h[?25l[52;158H6[44;5H[?12l[?25h[?25l[52;158H5[43;5H[?12l[?25h[?25l[52;158H4[42;5H[?12l[?25h[?25l[52;158H3[41;5H[?12l[?25h[?25l[52;158H2[40;5H[?12l[?25h[?25l[52;158H1[39;5H[?12l[?25h[?25l[52;158H0[38;5H[?12l[?25h[?25l[52;157H69[37;5H[?12l[?25h[?25l[52;158H8,0-1[36;5H[?12l[?25h[?25l[52;158H7,1  [35;5H[?12l[?25h[?25l[52;158H6[34;5H[?12l[?25h[?25l[52;158H5[33;5H[?12l[?25h[?25l[52;158H4[32;5H[?12l[?25h[?25l[52;158H3[31;5H[?12l[?25h[?25l[52;158H2[30;5H[?12l[?25h[?25l[52;158H1[29;5H[?12l[?25h[?25l[52;160H2[29;6H[?12l[?25h[?25l[52;160H3[29;7H[?12l[?25h[?25l[52;160H4[29;8H[?12l[?25h[?25l[52;160H5[29;9H[?12l[?25h[?25l[52;160H6[29;10H[?12l[?25h[?25l[52;160H7[29;11H[?12l[?25h[?25l[52;160H8[29;12H[?12l[?25h[?25l[52;160H9[29;13H[?12l[?25h[?25l[52;160H10[29;14H[?12l[?25h[?25l[52;161H1[29;15H[?12l[?25h[?25l[52;161H2[29;16H[?12l[?25h[?25l[52;161H3[29;17H[?12l[?25h[?25l[52;161H4[29;18H[?12l[?25h[?25l[52;161H5[29;19H[?12l[?25h[?25l[52;161H6[29;20H[?12l[?25h[?25l[52;161H7[29;21H[?12l[?25h[?25l[52;161H8[29;22H[?12l[?25h[?25l[52;161H9[29;23H[?12l[?25h[?25l[52;160H20[29;24H[?12l[?25h[?25l[52;161H1[29;25H[?12l[?25h[?25l[52;1H[1m-- INSERT --[m[52;156H[K[52;156H161,22[8C38%[29;26H[?12l[?25h[?25l[30;13H[K[31;13Hself.body_conv = self.add_conv_body_func(self.image)[32;13H[34m# fpn neck[m[32;23H[K[33;13H[33mif[m self.add_fpn_neck_func == [36mNone[m:[34;13H    [33mreturn[m self.body_conv[34;38H[K[35;13Hself.neck_conv = self.add_fpn_neck_func(self.body_conv, start_level=cfg.start_level)[36;13H[33mreturn[m self.neck_conv[37;9H[K[38;9H[33mdef[m [36mcls_subnet[m(self, subnet_input, num_conv=[31m4[m, name=[36mNone[m):[39;13Hsubnet_blob = subnet_input[40;13H[33mfor[m i [33min[m [36mrange[m(num_conv):[40;38H[K[41;28H_in = subnet_blob[41;45H[K[42;17Hsubnet_blob = fluid.layers.conv2d([43;21H[36minput[m=subnet_blob_in,[44;21Hnum_filters=[31m256[m,[45;21Hfilter_size=[31m3[m,[46;21Hstride=[31m1[m,[46;30H[K[47;21Hpadding=[31m1[m,[47;31H[K[48;21Hact=[31m'relu'[m,[48;33H[K[49;21Hname=name + [31m"_sub{}_cls"[m.format(i),[49;56H[K[50;21Hparam_attr=ParamAttr(name=[31m"sub{}_cls_w"[m.format(i), [50;72H[K[51;21H                     initializer=Normal(loc=[31m0.[m, scale=[31m0.01[m)),[52;158H2,9 [30;13H[?12l[?25h[?25lp[52;160H10[30;14H[?12l[?25h[?25lr[52;161H1[30;15H[?12l[?25h[?25li[52;161H2[30;16H[?12l[?25h[?25ln[52;161H3[30;17H[?12l[?25h[?25l[36mprint[m[52;161H4[30;18H[?12l[?25h[?25l([52;161H5[30;19H[?12l[?25h[?25l)[46m()[m[52;161H6[30;20H[?12l[?25h[?25l[52;161H5[30;19H[?12l[?25h[?25l[46ms[melf.image)[30;19Hs[9C[46m)[m[52;160H2[30;29H[?12l[?25h[?25l[30;18H([10C)[52;158H3[31;29H[?12l[?25h[?25l[52;161H6[31;30H[?12l[?25h[?25l[52;161H7[31;31H[?12l[?25h[?25l[52;161H8[31;32H[?12l[?25h[?25l[52;161H9[31;33H[?12l[?25h[?25l[52;160H30[31;34H[?12l[?25h[?25l[52;161H1[31;35H[?12l[?25h[?25l[52;161H2[31;36H[?12l[?25h[?25l[52;161H3[31;37H[?12l[?25h[?25l[52;161H4[31;38H[?12l[?25h[?25l[52;161H5[31;39H[?12l[?25h[?25l[52;161H6[31;40H[?12l[?25h[?25l[52;161H7[31;41H[?12l[?25h[?25l[52;161H8[31;42H[?12l[?25h[?25l[52;161H9[31;43H[?12l[?25h[?25l[52;160H40[31;44H[?12l[?25h[?25l[52;161H1[31;45H[?12l[?25h[?25l[52;161H2[31;46H[?12l[?25h[?25l[52;161H3[31;47H[?12l[?25h[?25l[52;161H4[31;48H[?12l[?25h[?25l[52;161H5[31;49H[?12l[?25h[?25l[52;161H6[31;50H[?12l[?25h[?25l[52;161H7[31;51H[?12l[?25h[?25l[52;161H8[31;52H[?12l[?25h[?25lc[46m([10C)[m[52;161H9[31;53H[?12l[?25h[?25l[52;160H50[31;54H[?12l[?25h[?25l([10C)[52;161H1[31;55H[?12l[?25h[?25l[52;161H2[31;56H[?12l[?25h[?25l[52;161H3[31;57H[?12l[?25h[?25l[52;161H4[31;58H[?12l[?25h[?25l[52;161H5[31;59H[?12l[?25h[?25l[52;161H6[31;60H[?12l[?25h[?25l[52;158H4,19[32;23H[?12l[?25h[?25l[52;158H5,43[33;47H[?12l[?25h[?25l[52;158H6,34[34;38H[?12l[?25h[?25l[52;158H7,56[35;60H[?12l[?25h[?25l[52;161H7[35;61H[?12l[?25h[?25l[52;161H8[35;62H[?12l[?25h[?25l[52;161H9[35;63H[?12l[?25h[?25l[52;160H60[35;64H[?12l[?25h[?25l[52;161H1[35;65H[?12l[?25h[?25l[52;161H2[35;66H[?12l[?25h[?25l[52;161H3[35;67H[?12l[?25h[?25l[52;161H4[35;68H[?12l[?25h[?25l[52;161H5[35;69H[?12l[?25h[?25l[52;161H6[35;70H[?12l[?25h[?25l[52;161H7[35;71H[?12l[?25h[?25l[52;161H8[35;72H[?12l[?25h[?25l[52;161H9[35;73H[?12l[?25h[?25l[52;160H70[35;74H[?12l[?25h[?25l[52;161H1[35;75H[?12l[?25h[?25l[52;161H2[35;76H[?12l[?25h[?25l[52;161H3[35;77H[?12l[?25h[?25l[52;161H4[35;78H[?12l[?25h[?25l[52;161H5[35;79H[?12l[?25h[52;1H[K[35;78H[?25l[52;156H167,74[8C38%[35;78H[?12l[?25h[?25l[52;156H[K[52;1H:[?12l[?25hwq[?25l"models/model_builder.py" 393L, 16218C written
+[?1l>[?12l[?25h[?1049l# python eval_coco_map.py --pretrained_model=output/model_final/ --data_dir=dataset/coco/COCO17
+-----------  Configuration Arguments -----------
+batch_size_per_im: 512
+class_num: 81
+data_dir: dataset/coco/COCO17
+dataset: coco2017
+draw_threshold: 0.8
+enable_ce: False
+im_per_batch: 1
+image_path: dataset/coco/val2017
+learning_rate: 0.01
+log_window: 20
+max_iter: 180000
+max_size: 1333
+model_save_dir: output
+nms_thresh: 0.5
+num_gpus: 1
+padding_minibatch: False
+parallel: True
+pixel_means: [102.9801, 115.9465, 122.7717]
+pretrained_model: output/model_final/
+scales: [800]
+score_thresh: 0.05
+snapshot_stride: 10000
+use_gpu: True
+use_profile: False
+use_pyreader: True
+------------------------------------------------
+loading annotations into memory...
+Done (t=0.93s)
+creating index...
+index created!
+name: "image"
+type {
+  type: LOD_TENSOR
+  lod_tensor {
+    tensor {
+      data_type: FP32
+      dims: -1
+      dims: 3
+      dims: 1333
+      dims: 1333
+    }
+    lod_level: 0
+  }
+}
+persistable: false
+
+end_level: 3
+used_body_levels: 3
+W0513 06:22:26.877950 99113 device_context.cc:261] Please NOTE: device: 0, CUDA Capability: 70, Driver API Version: 10.1, Runtime API Version: 9.0
+W0513 06:22:26.883275 99113 device_context.cc:269] device: 0, cuDNN Version: 7.0.
+Creating: coco2017
+file_list: dataset/coco/COCO17/annotations/instances_val2017.json
+loading annotations into memory...
+Done (t=0.95s)
+creating index...
+index created!
+Loaded dataset: coco2017
+5000 roidb entries
+val on coco2017 with 5000 roidbs
+begin run
+1557728550	The content of decoded_box: 	Tensor[tmp_0]
+	shape: [1,135900,4,]
+	dtype: f
+	data: -10.8628,-4.95698,12.9546,7.55361,-14.0339,-7.49451,15.1843,8.90162,-16.3459,-10.1038,
+1557728550	The content of im_info: 	Tensor[im_info]
+	shape: [1,3,]
+	dtype: f
+	data: 800,1202,1.87793,
+1557728550	The content of decoded_box: 	Tensor[tmp_1]
+	shape: [1,34200,4,]
+	dtype: f
+	data: -20.4772,-9.23582,26.986,16.4317,-28.7945,-14.6204,32.7169,18.9275,-34.1495,-20.7011,
+1557728550	The content of im_info: 	Tensor[im_info]
+	shape: [1,3,]
+	dtype: f
+	data: 800,1202,1.87793,
+1557728550	The content of decoded_box: 	Tensor[tmp_2]
+	shape: [1,8550,4,]
+	dtype: f
+	data: -43.2567,-19.6278,55.6909,33.8922,-56.0058,-27.369,70.6413,40.0493,-63.3831,-35.8157,
+1557728550	The content of im_info: 	Tensor[im_info]
+	shape: [1,3,]
+	dtype: f
+	data: 800,1202,1.87793,
+1557728550	The content of decoded_box: 	Tensor[tmp_3]
+	shape: [1,8550,4,]
+	dtype: f
+	data: -87.664,-39.2556,112.974,68.3169,-113.445,-54.7379,143.207,80.6312,-128.364,-71.6314,
+1557728550	The content of im_info: 	Tensor[im_info]
+	shape: [1,3,]
+	dtype: f
+	data: 800,1202,1.87793,
+1557728550	The content of decoded_box: 	Tensor[tmp_4]
+	shape: [1,8550,4,]
+	dtype: f
+	data: -174.177,-77.2875,225.421,136.04,-225.457,-107.915,285.555,160.401,-255.13,-141.335,
+1557728550	The content of im_info: 	Tensor[im_info]
+	shape: [1,3,]
+	dtype: f
+	data: 800,1202,1.87793,
+1557728550	The content of boxes_list: 	Tensor[concat_0.tmp_0]
+	shape: [195750,80,4,]
+	dtype: f
+	data: -10.8628,-4.95698,12.9546,7.55361,-10.8628,-4.95698,12.9546,7.55361,-10.8628,-4.95698,
+1557728551	The content of scores_list: 	Tensor[concat_1.tmp_0]
+	shape: [195750,80,]
+	dtype: f
+	data: -5.34612,-5.50057,-5.38596,-5.93569,-5.52895,-5.78056,-5.55735,-5.56936,-5.32169,-5.55955,
+*** Aborted at 1557728551 (unix time) try "date -d @1557728551" if you are using GNU date ***
+PC: @                0x0 (unknown)
+*** SIGSEGV (@0xfffffffffffffff0) received by PID 99113 (TID 0x7f1928c5d700) from PID 18446744073709551600; stack trace: ***
+    @     0x7f1928842390 (unknown)
+    @     0x7f1854a67a18 paddle::operators::MultiClassNMSKernel<>::Compute()
+    @     0x7f1854a6957f _ZNSt17_Function_handlerIFvRKN6paddle9framework16ExecutionContextEEZNKS1_24OpKernelRegistrarFunctorINS0_8platform8CPUPlaceELb0ELm0EINS0_9operators19MultiClassNMSKernelIfEENSA_IdEEEEclEPKcSF_iEUlS4_E_E9_M_invokeERKSt9_Any_dataS4_
+    @     0x7f1854fea651 paddle::framework::OperatorWithKernel::RunImpl()
+    @     0x7f1854feb6a3 paddle::framework::OperatorWithKernel::RunImpl()
+    @     0x7f1854fe4dde paddle::framework::OperatorBase::Run()
+    @     0x7f185343325e paddle::framework::Executor::RunPreparedContext()
+    @     0x7f185343631d paddle::framework::Executor::Run()
+    @     0x7f1853254226 _ZZN8pybind1112cpp_function10initializeIZN6paddle6pybindL18pybind11_init_coreERNS_6moduleEEUlRNS2_9framework8ExecutorERKNS6_11ProgramDescEPNS6_5ScopeEibbRKSt6vectorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaISK_EEE97_vJS8_SB_SD_ibbSO_EJNS_4nameENS_9is_methodENS_7siblingEEEEvOT_PFT0_DpT1_EDpRKT2_ENUlRNS_6detail13function_callEE1_4_FUNES16_
+    @     0x7f18532a22d4 pybind11::cpp_function::dispatcher()
+    @           0x4c5326 PyEval_EvalFrameEx
+    @           0x4b9b66 PyEval_EvalCodeEx
+    @           0x4c1f56 PyEval_EvalFrameEx
+    @           0x4b9b66 PyEval_EvalCodeEx
+    @           0x4c17c6 PyEval_EvalFrameEx
+    @           0x4b9b66 PyEval_EvalCodeEx
+    @           0x4c1f56 PyEval_EvalFrameEx
+    @           0x4b9b66 PyEval_EvalCodeEx
+    @           0x4eb69f (unknown)
+    @           0x4e58f2 PyRun_FileExFlags
+    @           0x4e41a6 PyRun_SimpleFileExFlags
+    @           0x4938ce Py_Main
+    @     0x7f1928487830 __libc_start_main
+    @           0x493299 _start
+    @                0x0 (unknown)
+Segmentation fault
+# ^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[A^[[A^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B^[[B
+sh: 11: [B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B[A[A[B[B[B[B[B[B[B[B[B[B[B[B[B[B[B: not found
+# exit
+
+Script done on Mon May 13 06:43:40 2019
