@@ -23,20 +23,22 @@ import paddle
 import paddle.fluid as fluid
 import reader
 from utility import print_arguments, parse_args
-from models.model_builder import *
+import models_stgraph.model_builder as model_builder
+import models_stgraph.resnet as resnet
+import models_stgraph.fpn as fpn
 import json
 from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval, Params
 from config import cfg
 from data_utils import DatasetPath
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "5"
 
 def eval():
 
     data_path = DatasetPath('val')
     test_list = data_path.get_file_list()
 
+    image_shape = [3, cfg.TEST.max_size, cfg.TEST.max_size]
     class_nums = cfg.class_num
     devices = os.getenv("CUDA_VISIBLE_DEVICES") or ""
     devices_num = len(devices.split(","))
@@ -50,37 +52,50 @@ def eval():
     }
     label_list[0] = ['background']
 
-    retinanet = RetinaNet("retinanet")
-
+    model = model_builder.RetinaNet(
+            add_conv_body_func=resnet.add_ResNet50_conv_body,
+            add_fpn_neck_func=fpn.add_fpn_neck,
+            anchor_strides=[8, 16, 32, 64, 128],
+            use_pyreader=False,
+            mode='val')
+    model.build_model(image_shape)
+    pred_boxes = model.eval_bbox_out()
+    place = fluid.CUDAPlace(0) if cfg.use_gpu else fluid.CPUPlace()
+    exe = fluid.Executor(place)
+    exe.run(fluid.default_startup_program())
+    # yapf: disable
     if cfg.pretrained_model:
-        pretrained, _ = fluid.dygraph.load_persistables(cfg.pretrained_model)
-        retinanet.load_dict(pretrained)
+        def if_exist(var):
+            return os.path.exists(os.path.join(cfg.pretrained_model, var.name))
+        print('load pretrained model')
+        fluid.io.load_vars(exe, cfg.pretrained_model, predicate=if_exist)
 
     # yapf: enable
     test_reader = reader.test(total_batch_size)
+    feeder = fluid.DataFeeder(place=place, feed_list=model.feeds())
 
     dts_res = []
     segms_res = []
     
+    fetch_list = [pred_boxes]
     eval_start = time.time()
-    retinanet.eval()
     for batch_id, batch_data in enumerate(test_reader()):
         start = time.time()
         im_info = []
         for data in batch_data:
             im_info.append(data[1])
-        image_data = np.array(
-            [x[0] for x in batch_data]).astype('float32')
-        im_info_data = np.array(
-            [x[1] for x in batch_data]).astype('float32')
-        im_id_data = np.array(
-            [x[2] for x in batch_data]).astype('int32')
+        #print("begin run")
+        #print("im_id: {}".format(data[2]))
+        results = exe.run(fetch_list=[v.name for v in fetch_list],
+                          feed=feeder.feed(batch_data),
+                          return_numpy=False)
+        #print("after run")
+        pred_boxes_v = results[0]
 
-        pred_boxes = retinanet('eval', image_data, im_info_data)
-        nmsed_out = pred_boxes['det_outs']
-        lod = pred_boxes['lod']
+        new_lod = pred_boxes_v.lod()
+        nmsed_out = pred_boxes_v
 
-        dts_res += get_dt_res(total_batch_size, lod, nmsed_out,
+        dts_res += get_dt_res(total_batch_size, new_lod[0], nmsed_out,
                               batch_data, num_id_to_cat_id_map)
 
         end = time.time()
@@ -105,6 +120,4 @@ def eval():
 if __name__ == '__main__':
     args = parse_args()
     print_arguments(args)
-    place = fluid.CUDAPlace(0) if cfg.use_gpu else fluid.CPUPlace()
-    with fluid.dygraph.guard(place):
-        eval()
+    eval()
